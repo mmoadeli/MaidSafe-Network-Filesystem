@@ -79,6 +79,7 @@ class GenericMessage {
     kMsgToMPAH,
     kConnect,
     kGetPmidSize,
+    kGetPmidHealth,
     kNodeDown,
     kNodeUp,
     kGetElementList,

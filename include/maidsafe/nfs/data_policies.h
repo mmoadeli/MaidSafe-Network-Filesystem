@@ -191,7 +191,7 @@ template<typename SigningFob>
 class NoGet {
  public:
   NoGet() {}
-  NoGet(routing::Routing&, const SigningFob&) {}
+  explicit NoGet(routing::Routing&) {}
   template<typename Data>
   void Get(const typename Data::name_type&, const routing::ResponseFunctor&) {}
   template<typename Data>
