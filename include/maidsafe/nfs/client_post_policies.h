@@ -88,27 +88,72 @@ class ClientMpidPostPolicy : ClientPostPolicy<passport::Mpid, Persona::kClientMp
   ClientMpidPostPolicy(routing::Routing& routing, const passport::Mpid& signing_fob)
     : ClientPostPolicy<passport::Mpid, Persona::kClientMpid>(routing, signing_fob) {}
 
-  void RegisterMpid(const NonEmptyString& serialised_mpid,
+  void RegisterMpid(const NonEmptyString& serialised_mpid_registration,
                     const routing::ResponseFunctor& callback) {
-    GenericMessage generic_message(
-        nfs::GenericMessage::Action::kRegisterMpid,
-        Persona::kClientMpid,
-        kSource_,
-        kSigningFob_->name().data,
-        serialised_mpid);
-    Message message(GenericMessage::message_type_identifier, generic_message.Serialise().data);
-    routing_.SendGroup(NodeId(generic_message.name().string()), message.Serialise()->string(),
-                       false, callback);
+    MessageToMPAH message_to_mpah(MessageToMPAH::Action::kRegisterMpid,
+                                  kSigningFob_->name(),
+                                  serialised_mpid_registration);
+    SendMessage(message_to_mpah.Serialise(), callback);
+  }
+  void UnRegisterMpid(const NonEmptyString& serialised_mpid_registration,
+                      const routing::ResponseFunctor& callback) {
+    MessageToMPAH message_to_mpah(MessageToMPAH::Action::kUnregisterMpid,
+                                  kSigningFob_->name(),
+                                  serialised_mpid_registration);
+    SendMessage(message_to_mpah.Serialise(), callback);
+  }
+  void GoOffline(const routing::ResponseFunctor& callback) {
+    MessageToMPAH message_to_mpah(MessageToMPAH::Action::kClientDown, kSigningFob_->name());
+    SendMessage(message_to_mpah.Serialise(), callback);
+  }
+  void GoOnline(const routing::ResponseFunctor& callback) {
+    MessageToMPAH message_to_mpah(MessageToMPAH::Action::kClientUp, kSigningFob_->name());
+    SendMessage(message_to_mpah.Serialise(), callback);
+  }
+  void GetOfflineMsg(const routing::ResponseFunctor& callback) {
+    MessageToMPAH message_to_mpah(MessageToMPAH::Action::kGetOfflineMsg, kSigningFob_->name());
+    SendMessage(message_to_mpah.Serialise(), callback);
+  }
+  void AddContact(const NonEmptyString& contact, const routing::ResponseFunctor& callback) {
+    MessageToMPAH message_to_mpah(
+        MessageToMPAH::Action::kAddContact, kSigningFob_->name(), contact);
+    SendMessage(message_to_mpah.Serialise(), callback);
+  }
+  void BlockContact(const NonEmptyString& contact, const routing::ResponseFunctor& callback) {
+    MessageToMPAH message_to_mpah(
+        MessageToMPAH::Action::kBlockContact, kSigningFob_->name(), contact);
+    SendMessage(message_to_mpah.Serialise(), callback);
+  }
+  void MarkSpamContact(const NonEmptyString& contact, const routing::ResponseFunctor& callback) {
+    MessageToMPAH message_to_mpah(
+        MessageToMPAH::Action::kMarkSpamContact, kSigningFob_->name(), contact);
+    SendMessage(message_to_mpah.Serialise(), callback);
+  }
+  void UnMarkSpamContact(const NonEmptyString& contact,
+                         const routing::ResponseFunctor& callback) {
+    MessageToMPAH message_to_mpah(
+        MessageToMPAH::Action::kUnMarkSpamContact, kSigningFob_->name(), contact);
+    SendMessage(message_to_mpah.Serialise(), callback);
+  }
+  void RemoveContact(const NonEmptyString& contact, const routing::ResponseFunctor& callback) {
+    MessageToMPAH message_to_mpah(
+        MessageToMPAH::Action::kRemoveContact, kSigningFob_->name(), contact);
+    SendMessage(message_to_mpah.Serialise(), callback);
+  }
+  void GetContactList(const routing::ResponseFunctor& callback) {
+    MessageToMPAH message_to_mpah(MessageToMPAH::Action::kGetContactList, kSigningFob_->name());
+    SendMessage(message_to_mpah.Serialise(), callback);
   }
 
-  void UnregisterMpid(const NonEmptyString& serialised_mpid,
-                      const routing::ResponseFunctor& callback) {
+ private:
+  void SendMessage(const NonEmptyString& serialised_message,
+                   const routing::ResponseFunctor& callback) {
     GenericMessage generic_message(
-        nfs::GenericMessage::Action::kUnregisterMpid,
+        nfs::GenericMessage::Action::kMsgToMPAH,
         Persona::kClientMpid,
         kSource_,
         kSigningFob_->name().data,
-        serialised_mpid);
+        serialised_message);
     Message message(GenericMessage::message_type_identifier, generic_message.Serialise().data);
     routing_.SendGroup(NodeId(generic_message.name().string()), message.Serialise()->string(),
                        false, callback);

@@ -6,3 +6,4 @@ message Message {
   required bytes serialised_message = 2;
   optional bytes signature = 3;
 }
+

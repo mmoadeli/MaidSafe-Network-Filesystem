@@ -24,18 +24,59 @@
 #include "maidsafe/nfs/persona_id.h"
 #include "maidsafe/nfs/types.h"
 
+#include "maidsafe/passport/types.h"
 
 namespace maidsafe {
 
 namespace nfs {
+
+class MessageToMPAH {
+ public:
+  enum class Action : int32_t {
+    kRegisterMpid,
+    kUnregisterMpid,
+    kClientDown,
+    kClientUp,
+    kGetOfflineMsg,
+    kAddContact,
+    kBlockContact,
+    kMarkSpamContact,
+    kUnMarkSpamContact,
+    kRemoveContact,
+    kGetContactList
+  };
+  typedef TaggedValue<NonEmptyString, struct SerialisedMessageToMPAHTag> serialised_type;
+
+  MessageToMPAH(Action action, const passport::Mpid::name_type& mpid_name);
+  MessageToMPAH(Action action,
+                const passport::Mpid::name_type& mpid_name,
+                const NonEmptyString& content);
+  MessageToMPAH(const MessageToMPAH& other);
+  MessageToMPAH& operator=(const MessageToMPAH& other);
+  MessageToMPAH(MessageToMPAH&& other);
+  MessageToMPAH& operator=(MessageToMPAH&& other);
+
+  explicit MessageToMPAH(const serialised_type& serialised_message);
+  serialised_type Serialise() const;
+
+  Action action() const { return action_; }
+  passport::Mpid::name_type mpid_name() { return mpid_name_; }
+  NonEmptyString content() const { return content_; }
+
+ private:
+  bool ValidateInputs() const;
+
+  Action action_;
+  passport::Mpid::name_type mpid_name_;
+  NonEmptyString content_;
+};
 
 class GenericMessage {
  public:
   enum class Action : int32_t {
     kRegisterPmid,
     kUnregisterPmid,
-    kRegisterMpid,
-    kUnregisterMpid,
+    kMsgToMPAH,
     kConnect,
     kGetPmidSize,
     kNodeDown,
@@ -98,6 +139,12 @@ std::basic_ostream<Elem, Traits>& operator<<(std::basic_ostream<Elem, Traits>& o
   switch (action) {
     case GenericMessage::Action::kRegisterPmid:
       action_str = "Register PMID";
+      break;
+    case GenericMessage::Action::kUnregisterPmid:
+      action_str = "Unregister PMID";
+      break;
+    case GenericMessage::Action::kMsgToMPAH:
+      action_str = "Message to MPAH";
       break;
     case GenericMessage::Action::kConnect:
       action_str = "Connect";

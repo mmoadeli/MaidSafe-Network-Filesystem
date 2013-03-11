@@ -36,3 +36,10 @@ message ConnectMessage {
   required int32 message_id = 1; // random int32
   optional int32 parent_id = 2;
 }
+
+// MPID Client to MPID Account Holders
+message MessageToMPAH {
+  required int32 action = 1;
+  required bytes mpid_name = 2;
+  optional bytes content = 3;
+}

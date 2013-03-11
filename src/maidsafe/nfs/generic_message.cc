@@ -165,6 +165,78 @@ GenericMessage::serialised_type GenericMessage::Serialise() const {
   return serialised_message;
 }
 
+/// MessageToMPAH
+
+MessageToMPAH::MessageToMPAH(Action action,
+                             const passport::Mpid::name_type& mpid_name)
+    : action_(action), mpid_name_(mpid_name), content_() {
+  if (!ValidateInputs())
+    ThrowError(NfsErrors::invalid_parameter);
+}
+
+MessageToMPAH::MessageToMPAH(Action action,
+                             const passport::Mpid::name_type& mpid_name,
+                             const NonEmptyString& content)
+    : action_(action), mpid_name_(mpid_name), content_(content) {
+  if (!ValidateInputs())
+    ThrowError(NfsErrors::invalid_parameter);
+}
+
+MessageToMPAH::MessageToMPAH(const MessageToMPAH& other)
+    : action_(other.action_), mpid_name_(other.mpid_name_), content_(other.content_) {}
+
+MessageToMPAH& MessageToMPAH::operator=(const MessageToMPAH& other) {
+  action_ = other.action_;
+  mpid_name_ = other.mpid_name_;
+  content_ = other.content_;
+  return *this;
+}
+
+MessageToMPAH::MessageToMPAH(MessageToMPAH&& other)
+    : action_(std::move(other.action_)),
+      mpid_name_(std::move(other.mpid_name_)),
+      content_(std::move(other.content_)) {}
+
+MessageToMPAH& MessageToMPAH::operator=(MessageToMPAH&& other) {
+  action_ = std::move(other.action_);
+  mpid_name_ = std::move(other.mpid_name_);
+  content_ = std::move(other.content_);
+  return *this;
+}
+
+MessageToMPAH::MessageToMPAH(const serialised_type& serialised_message)
+    : action_(), content_() {
+  protobuf::MessageToMPAH proto_mpah_message;
+  if (!proto_mpah_message.ParseFromString(serialised_message->string()))
+    ThrowError(CommonErrors::parsing_error);
+  action_ = static_cast<MessageToMPAH::Action>(proto_mpah_message.action());
+  mpid_name_ = passport::Mpid::name_type(Identity(proto_mpah_message.mpid_name()));
+  if (proto_mpah_message.has_content())
+    content_ = NonEmptyString(proto_mpah_message.content());
+  if (!ValidateInputs())
+    ThrowError(NfsErrors::invalid_parameter);
+}
+
+bool MessageToMPAH::ValidateInputs() const {
+  return mpid_name_.data.IsInitialised();
+}
+
+MessageToMPAH::serialised_type MessageToMPAH::Serialise() const {
+  serialised_type serialised_message;
+  try {
+    protobuf::MessageToMPAH proto_mpah_message;
+    proto_mpah_message.set_action(static_cast<int32_t>(action_));
+    proto_mpah_message.set_mpid_name(mpid_name_.data.string());
+    if (content_.IsInitialised())
+      proto_mpah_message.set_content(content_.string());
+    serialised_message = serialised_type(NonEmptyString(proto_mpah_message.SerializeAsString()));
+  }
+  catch(const std::exception&) {
+    ThrowError(NfsErrors::invalid_parameter);
+  }
+  return serialised_message;
+}
+
 }  // namespace nfs
 
 }  // namespace maidsafe
