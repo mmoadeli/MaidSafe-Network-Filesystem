@@ -57,6 +57,11 @@ typedef NetworkFileSystem<ClientMaidPutPolicy,
                           ClientMaidDeletePolicy,
                           ClientMaidPostPolicy> ClientMaidNfs;
 
+typedef NetworkFileSystem<NoPut<passport::Mpid>,
+                          NoGet<passport::Mpid>,
+                          NoDelete<passport::Mpid>,
+                          ClientMpidPostPolicy> ClientMpidNfs;
+
 
 typedef DataGetterPolicy KeyGetterNfs;
 

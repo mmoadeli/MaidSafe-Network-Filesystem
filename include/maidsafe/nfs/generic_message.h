@@ -34,6 +34,8 @@ class GenericMessage {
   enum class Action : int32_t {
     kRegisterPmid,
     kUnregisterPmid,
+    kRegisterMpid,
+    kUnregisterMpid,
     kConnect,
     kGetPmidSize,
     kNodeDown,

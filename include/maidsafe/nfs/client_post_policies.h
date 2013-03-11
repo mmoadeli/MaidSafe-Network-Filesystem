@@ -43,11 +43,23 @@ class ClientPostPolicy {
         kSigningFob_(new SigningFob(signing_fob)),
         kSource_(source_persona, routing_.kNodeId()) {}
 
+ protected:
+  routing::Routing& routing_;
+  const std::unique_ptr<const SigningFob> kSigningFob_;
+  const PersonaId kSource_;
+};
+
+
+class ClientMaidPostPolicy : ClientPostPolicy<passport::Maid, Persona::kClientMaid> {
+ public:
+  ClientMaidPostPolicy(routing::Routing& routing, const passport::Maid& signing_fob)
+    : ClientPostPolicy<passport::Maid, Persona::kClientMaid>(routing, signing_fob) {}
+
   void RegisterPmid(const NonEmptyString& serialised_pmid_registration,
                     const routing::ResponseFunctor& callback) {
     GenericMessage generic_message(
         nfs::GenericMessage::Action::kRegisterPmid,
-        source_persona,
+        Persona::kClientMaid,
         kSource_,
         kSigningFob_->name().data,
         serialised_pmid_registration);
@@ -60,7 +72,7 @@ class ClientPostPolicy {
                       const routing::ResponseFunctor& callback) {
     GenericMessage generic_message(
         nfs::GenericMessage::Action::kUnregisterPmid,
-        source_persona,
+        Persona::kClientMaid,
         kSource_,
         kSigningFob_->name().data,
         serialised_pmid_unregistration);
@@ -68,14 +80,39 @@ class ClientPostPolicy {
     routing_.SendGroup(NodeId(generic_message.name().string()), message.Serialise()->string(),
                        false, callback);
   }
-
- private:
-  routing::Routing& routing_;
-  const std::unique_ptr<const SigningFob> kSigningFob_;
-  const PersonaId kSource_;
 };
 
-typedef ClientPostPolicy<passport::Maid, Persona::kClientMaid> ClientMaidPostPolicy;
+class ClientMpidPostPolicy : ClientPostPolicy<passport::Mpid, Persona::kClientMpid> {
+ public:
+  ClientMpidPostPolicy(routing::Routing& routing, const passport::Mpid& signing_fob)
+    : ClientPostPolicy<passport::Mpid, Persona::kClientMpid>(routing, signing_fob) {}
+
+  void RegisterMpid(const NonEmptyString& serialised_mpid,
+                    const routing::ResponseFunctor& callback) {
+    GenericMessage generic_message(
+        nfs::GenericMessage::Action::kRegisterMpid,
+        Persona::kClientMpid,
+        kSource_,
+        kSigningFob_->name().data,
+        serialised_mpid);
+    Message message(GenericMessage::message_type_identifier, generic_message.Serialise().data);
+    routing_.SendGroup(NodeId(generic_message.name().string()), message.Serialise()->string(),
+                       false, callback);
+  }
+
+  void UnregisterMpid(const NonEmptyString& serialised_mpid,
+                      const routing::ResponseFunctor& callback) {
+    GenericMessage generic_message(
+        nfs::GenericMessage::Action::kUnregisterMpid,
+        Persona::kClientMpid,
+        kSource_,
+        kSigningFob_->name().data,
+        serialised_mpid);
+    Message message(GenericMessage::message_type_identifier, generic_message.Serialise().data);
+    routing_.SendGroup(NodeId(generic_message.name().string()), message.Serialise()->string(),
+                       false, callback);
+  }
+};
 
 }  // namespace nfs
 
