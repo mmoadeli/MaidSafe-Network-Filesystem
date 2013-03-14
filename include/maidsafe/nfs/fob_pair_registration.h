@@ -64,6 +64,23 @@ class PmidRegistration : FobPairRegistration
   }
 };
 
+class MpidRegistration : FobPairRegistration
+  <passport::Mpid, passport::Anmpid, passport::PublicMpid, passport::Anmpid> {
+ public:
+  typedef TaggedValue<NonEmptyString, struct SerialisedMpidRegistrationTag> serialised_type;
+
+  MpidRegistration(const passport::Anmpid& anmpid, const passport::Mpid& mpid, bool unregister)
+    : FobPairRegistration(anmpid, mpid, unregister) {}
+  explicit MpidRegistration(const serialised_type& serialised_mpid_registration)
+    : FobPairRegistration(serialised_mpid_registration->string()) {}
+
+  passport::PublicAnmpid::name_type anmpid_name() const { return outer_fob_name(); }
+  passport::PublicMpid::name_type mpid_name() const { return inner_fob_name(); }
+  serialised_type Serialise() const {
+    return serialised_type(NonEmptyString(SerialiseAsString()));
+  }
+};
+
 }  // namespace nfs
 
 }  // namespace maidsafe

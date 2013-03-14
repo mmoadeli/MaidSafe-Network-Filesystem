@@ -95,7 +95,7 @@ class ClientMpidPostPolicy : ClientPostPolicy<passport::Mpid, Persona::kClientMp
                                   serialised_mpid_registration);
     SendMessage(message_to_mpah.Serialise(), callback);
   }
-  void UnRegisterMpid(const NonEmptyString& serialised_mpid_registration,
+  void UnregisterMpid(const NonEmptyString& serialised_mpid_registration,
                       const routing::ResponseFunctor& callback) {
     MessageToMPAH message_to_mpah(MessageToMPAH::Action::kUnregisterMpid,
                                   kSigningFob_->name(),
