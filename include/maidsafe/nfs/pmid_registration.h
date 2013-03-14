@@ -12,6 +12,8 @@
 #ifndef MAIDSAFE_NFS_PMID_REGISTRATION_H_
 #define MAIDSAFE_NFS_PMID_REGISTRATION_H_
 
+#include <string>
+
 #include "maidsafe/common/types.h"
 
 #include "maidsafe/passport/types.h"
@@ -21,26 +23,45 @@ namespace maidsafe {
 
 namespace nfs {
 
-class PmidRegistration {
+template <typename InnerFob, typename OuterFob, typename InnerPubFob, typename OuterPubFob>
+class FobPairRegistration {
  public:
-  typedef TaggedValue<NonEmptyString, struct SerialisedPmidRegistrationTag> serialised_type;
-  PmidRegistration(const passport::Maid& maid,
-                   const passport::Pmid& pmid,
-                   bool unregister);
-  explicit PmidRegistration(const serialised_type& serialised_pmid_registration);
-  bool Validate(const passport::PublicMaid& public_maid,
-                const passport::PublicPmid& public_pmid) const;
-  serialised_type Serialise() const;
-  passport::PublicMaid::name_type maid_name() const { return maid_name_; }
-  passport::PublicPmid::name_type pmid_name() const { return pmid_name_; }
+  bool Validate(const OuterPubFob& public_outer_fob,
+                const InnerPubFob& public_inner_fob) const;
+  std::string SerialiseAsString() const;
   bool unregister() const { return unregister_; }
 
+ protected:
+  typename InnerFob::name_type inner_fob_name() const { return inner_fob_name_; }
+  typename OuterFob::name_type outer_fob_name() const { return outer_fob_name_; }
+  FobPairRegistration(const OuterFob& outer_fob,
+                      const InnerFob& inner_fob,
+                      bool unregister);
+  explicit FobPairRegistration(const std::string& serialised_fobpair_registration);
+
  private:
-  passport::PublicMaid::name_type maid_name_;
-  passport::PublicPmid::name_type pmid_name_;
+  typename OuterPubFob::name_type outer_fob_name_;
+  typename InnerPubFob::name_type inner_fob_name_;
   bool unregister_;
-  asymm::Signature maid_signature_;
-  asymm::Signature pmid_signature_;
+  asymm::Signature outer_fob_signature_;
+  asymm::Signature inner_fob_signature_;
+};
+
+class PmidRegistration : FobPairRegistration
+  <passport::Pmid, passport::Maid, passport::PublicPmid, passport::Maid> {
+ public:
+  typedef TaggedValue<NonEmptyString, struct SerialisedPmidRegistrationTag> serialised_type;
+
+  PmidRegistration(const passport::Maid& maid, const passport::Pmid& pmid, bool unregister)
+    : FobPairRegistration(maid, pmid, unregister) {}
+  explicit PmidRegistration(const serialised_type& serialised_pmid_registration)
+    : FobPairRegistration(serialised_pmid_registration->string()) {}
+
+  passport::PublicMaid::name_type maid_name() const { return outer_fob_name(); }
+  passport::PublicPmid::name_type pmid_name() const { return inner_fob_name(); }
+  serialised_type Serialise() const {
+    return serialised_type(NonEmptyString(SerialiseAsString()));
+  }
 };
 
 }  // namespace nfs

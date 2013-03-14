@@ -23,91 +23,102 @@ namespace nfs {
 
 namespace {
 
-asymm::PlainText GetSerialisedDetails(const passport::PublicMaid::name_type& maid_name,
-                                      const passport::PublicPmid::name_type& pmid_name,
+template <typename InnerPubFobName, typename OuterPubFobName>
+asymm::PlainText GetSerialisedDetails(const OuterPubFobName& outer_fob_name,
+                                      const InnerPubFobName& inner_fob_name,
                                       bool unregister) {
-  protobuf::PmidRegistration::SignedDetails::Details details;
-  details.set_maid_name(maid_name->string());
-  details.set_pmid_name(pmid_name->string());
+  protobuf::FobPairRegistration::SignedDetails::Details details;
+  details.set_outer_fob_name(outer_fob_name->string());
+  details.set_inner_fob_name(inner_fob_name->string());
   details.set_unregister(unregister);
   return asymm::PlainText(details.SerializeAsString());
 }
 
 asymm::PlainText GetSerialisedSignedDetails(const asymm::PlainText& serialised_details,
-                                            const asymm::Signature& pmid_signature) {
-  protobuf::PmidRegistration::SignedDetails signed_details;
+                                            const asymm::Signature& inner_fob_signature) {
+  protobuf::FobPairRegistration::SignedDetails signed_details;
   signed_details.set_serialised_details(serialised_details.string());
-  signed_details.set_pmid_signature(pmid_signature.string());
+  signed_details.set_inner_fob_signature(inner_fob_signature.string());
   return asymm::PlainText(signed_details.SerializeAsString());
 }
 
 }  //  unnamed namespace
 
-PmidRegistration::PmidRegistration(const passport::Maid& maid,
-                                   const passport::Pmid& pmid,
-                                   bool unregister)
-    : maid_name_(maid.name()),
-      pmid_name_(pmid.name()),
+template <typename InnerFob, typename OuterFob, typename InnerPubFob, typename OuterPubFob>
+FobPairRegistration<InnerFob, OuterFob, InnerPubFob, OuterPubFob>::FobPairRegistration(
+    const OuterFob& outer_fob, const InnerFob& inner_fob, bool unregister)
+    : outer_fob_name_(outer_fob.name()),
+      inner_fob_name_(inner_fob.name()),
       unregister_(unregister),
-      maid_signature_(),
-      pmid_signature_() {
-  auto serialised_details(GetSerialisedDetails(maid_name_, pmid_name_, unregister_));
-  pmid_signature_ = asymm::Sign(serialised_details, pmid.private_key());
+      outer_fob_signature_(),
+      inner_fob_signature_() {
+  auto serialised_details(GetSerialisedDetails(outer_fob_name_, inner_fob_name_, unregister_));
+  inner_fob_signature_ = asymm::Sign(serialised_details, inner_fob.private_key());
 
-  auto serialised_signed_details(GetSerialisedSignedDetails(serialised_details, pmid_signature_));
-  maid_signature_ = asymm::Sign(serialised_signed_details, maid.private_key());
+  auto serialised_signed_details(GetSerialisedSignedDetails(serialised_details,
+                                                            outer_fob_signature_));
+  outer_fob_signature_ = asymm::Sign(serialised_signed_details, outer_fob.private_key());
 }
 
-PmidRegistration::PmidRegistration(const serialised_type& serialised_pmid_registration)
-    : maid_name_(),
-      pmid_name_(),
+template <typename InnerFob, typename OuterFob, typename InnerPubFob, typename OuterPubFob>
+FobPairRegistration<InnerFob, OuterFob, InnerPubFob, OuterPubFob>::FobPairRegistration(
+    const std::string& serialised_fobpair_registration)
+    : outer_fob_name_(),
+      inner_fob_name_(),
       unregister_(),
-      maid_signature_(),
-      pmid_signature_() {
+      outer_fob_signature_(),
+      inner_fob_signature_() {
   auto fail([]() {
-    LOG(kError) << "Failed to parse pmid_registration.";
+    LOG(kError) << "Failed to parse fobpair_registration.";
     ThrowError(CommonErrors::parsing_error);
   });
-  protobuf::PmidRegistration proto_pmid_registration;
-  if (!proto_pmid_registration.ParseFromString(serialised_pmid_registration->string()))
+  protobuf::FobPairRegistration proto_fobpair_registration;
+  if (!proto_fobpair_registration.ParseFromString(serialised_fobpair_registration))
     fail();
-  protobuf::PmidRegistration::SignedDetails signed_details;
-  if (!signed_details.ParseFromString(proto_pmid_registration.serialised_signed_details()))
+  protobuf::FobPairRegistration::SignedDetails signed_details;
+  if (!signed_details.ParseFromString(proto_fobpair_registration.serialised_signed_details()))
     fail();
-  protobuf::PmidRegistration::SignedDetails::Details details;
+  protobuf::FobPairRegistration::SignedDetails::Details details;
   if (!details.ParseFromString(signed_details.serialised_details()))
     fail();
 
-  maid_name_ = passport::PublicMaid::name_type(Identity(details.maid_name()));
-  pmid_name_ = passport::PublicPmid::name_type(Identity(details.pmid_name()));
+  outer_fob_name_ = typename OuterFob::name_type(Identity(details.outer_fob_name()));
+  inner_fob_name_ = typename InnerFob::name_type(Identity(details.inner_fob_name()));
   unregister_ = details.unregister();
-  maid_signature_ = asymm::Signature(proto_pmid_registration.maid_signature());
-  pmid_signature_ = asymm::Signature(signed_details.pmid_signature());
+  outer_fob_signature_ = asymm::Signature(proto_fobpair_registration.outer_fob_signature());
+  inner_fob_signature_ = asymm::Signature(signed_details.inner_fob_signature());
 }
 
-bool PmidRegistration::Validate(const passport::PublicMaid& public_maid,
-                                const passport::PublicPmid& public_pmid) const {
-  auto serialised_details(GetSerialisedDetails(maid_name_, pmid_name_, unregister_));
-  if (!asymm::CheckSignature(serialised_details, pmid_signature_, public_pmid.public_key())) {
-    LOG(kWarning) << "Failed to validate PMID signature.";
+template <typename InnerFob, typename OuterFob, typename InnerPubFob, typename OuterPubFob>
+bool FobPairRegistration<InnerFob, OuterFob, InnerPubFob, OuterPubFob>::Validate(
+    const OuterPubFob& public_outer_fob, const InnerPubFob& public_inner_fob) const {
+  auto serialised_details(GetSerialisedDetails(outer_fob_name_, inner_fob_name_, unregister_));
+  if (!asymm::CheckSignature(serialised_details,
+                             inner_fob_signature_,
+                             public_inner_fob.public_key())) {
+    LOG(kWarning) << "Failed to validate InnerFob signature.";
     return false;
   }
-  auto serialised_signed_details(GetSerialisedSignedDetails(serialised_details, pmid_signature_));
-  if (!asymm::CheckSignature(serialised_signed_details, maid_signature_,
-                             public_maid.public_key())) {
-    LOG(kWarning) << "Failed to validate MAID signature.";
+  auto serialised_signed_details(GetSerialisedSignedDetails(serialised_details,
+                                                            inner_fob_signature_));
+  if (!asymm::CheckSignature(serialised_signed_details, outer_fob_signature_,
+                             public_outer_fob.public_key())) {
+    LOG(kWarning) << "Failed to validate OuterFob signature.";
     return false;
   }
   return true;
 }
 
-PmidRegistration::serialised_type PmidRegistration::Serialise() const {
-  protobuf::PmidRegistration proto_pmid_registration;
-  proto_pmid_registration.set_serialised_signed_details(
-      GetSerialisedSignedDetails(GetSerialisedDetails(maid_name_, pmid_name_, unregister_),
-                                 pmid_signature_).string());
-  proto_pmid_registration.set_maid_signature(maid_signature_.string());
-  return serialised_type(NonEmptyString(proto_pmid_registration.SerializeAsString()));
+template <typename InnerFob, typename OuterFob, typename InnerPubFob, typename OuterPubFob>
+std::string FobPairRegistration<InnerFob, OuterFob,
+                                InnerPubFob, OuterPubFob>::SerialiseAsString() const {
+  protobuf::FobPairRegistration proto_fobpair_registration;
+  proto_fobpair_registration.set_serialised_signed_details(
+      GetSerialisedSignedDetails(
+          GetSerialisedDetails(outer_fob_name_, inner_fob_name_, unregister_),
+          inner_fob_signature_).string());
+  proto_fobpair_registration.set_outer_fob_signature(outer_fob_signature_.string());
+  return proto_fobpair_registration.SerializeAsString();
 }
 
 }  // namespace nfs

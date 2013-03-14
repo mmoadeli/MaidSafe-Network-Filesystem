@@ -17,18 +17,19 @@ message GenericMessage {
 }
 
 // MAID Client send to MAID Account Holder
-message PmidRegistration {
+// or MPID Client send to MPID Account Holder
+message FobPairRegistration {
   message SignedDetails {
     message Details {
-      required bytes maid_name = 1;
-      required bytes pmid_name = 2;
+      required bytes outer_fob_name = 1;
+      required bytes inner_fob_name = 2;
       required bool unregister = 3;
     }
     required bytes serialised_details = 1;
-    required bytes pmid_signature = 2;
+    required bytes inner_fob_signature = 2;
   }
   required bytes serialised_signed_details = 1;
-  required bytes maid_signature = 2;
+  required bytes outer_fob_signature = 2;
 }
 
 // MPID Client to MPID Client (or MPID Account Holders)
