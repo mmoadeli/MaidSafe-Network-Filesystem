@@ -9,8 +9,8 @@
  *  written permission of the board of directors of MaidSafe.net.                                  *
  **************************************************************************************************/
 
-#ifndef MAIDSAFE_NFS_PMID_REGISTRATION_H_
-#define MAIDSAFE_NFS_PMID_REGISTRATION_H_
+#ifndef MAIDSAFE_NFS_FOB_PAIR_REGISTRATION_H_
+#define MAIDSAFE_NFS_FOB_PAIR_REGISTRATION_H_
 
 #include <string>
 
@@ -68,4 +68,4 @@ class PmidRegistration : FobPairRegistration
 
 }  // namespace maidsafe
 
-#endif  // MAIDSAFE_NFS_PMID_REGISTRATION_H_
+#endif  // MAIDSAFE_NFS_FOB_PAIR_REGISTRATION_H_

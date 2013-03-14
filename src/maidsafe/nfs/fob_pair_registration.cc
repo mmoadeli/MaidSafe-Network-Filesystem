@@ -9,7 +9,7 @@
  *  permission of the board of directors of MaidSafe.net.                                          *
  **************************************************************************************************/
 
-#include "maidsafe/nfs/pmid_registration.h"
+#include "maidsafe/nfs/fob_pair_registration.h"
 
 #include "maidsafe/common/rsa.h"
 #include "maidsafe/common/utils.h"
