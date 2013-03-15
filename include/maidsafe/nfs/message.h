@@ -13,6 +13,7 @@
 #define MAIDSAFE_NFS_MESSAGE_H_
 
 #include <cstdint>
+#include <vector>
 
 #include "maidsafe/common/rsa.h"
 #include "maidsafe/common/types.h"
@@ -54,6 +55,18 @@ template<typename InnerMessageType>
 typename InnerMessageType::serialised_type Message::serialised_inner_message() const {
   return typename InnerMessageType::serialised_type(serialised_inner_message_);
 }
+
+class MessageList {
+ public:
+  typedef TaggedValue<NonEmptyString, struct SerialisedMessageListTag> serialised_type;
+
+  explicit MessageList(const serialised_type& serialised_message_list);
+  serialised_type Serialise() const;
+
+  std::vector<Message> message_list() { return message_list_;}
+ private:
+  std::vector<Message> message_list_;
+};
 
 }  // namespace nfs
 

@@ -7,3 +7,7 @@ message Message {
   optional bytes signature = 3;
 }
 
+message MessageList {
+  repeated Message messages = 1;
+}
+

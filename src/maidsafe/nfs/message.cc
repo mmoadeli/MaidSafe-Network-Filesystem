@@ -80,6 +80,27 @@ Message::serialised_type Message::Serialise() const {
   return serialised_message;
 }
 
+MessageList::MessageList(const serialised_type& serialised_message)
+    : message_list_() {
+  protobuf::MessageList proto_message_list;
+  if (!proto_message_list.ParseFromString(serialised_message->string()))
+    ThrowError(CommonErrors::parsing_error);
+  for (int i(0); i < proto_message_list.messages_size(); ++i) {
+    Message msg(Message::serialised_type(NonEmptyString(
+        proto_message_list.messages(i).SerializeAsString())));
+    message_list_.push_back(std::move(msg));
+  }
+}
+
+MessageList::serialised_type MessageList::Serialise() const {
+  protobuf::MessageList proto_message_list;
+  for (auto &message : message_list_) {
+    auto entry = proto_message_list.add_messages();
+    entry->ParseFromString(message.Serialise()->string());
+  }
+  return serialised_type(NonEmptyString(proto_message_list.SerializeAsString()));
+}
+
 }  // namespace nfs
 
 }  // namespace maidsafe
