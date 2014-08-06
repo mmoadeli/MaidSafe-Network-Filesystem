@@ -96,8 +96,8 @@ std::pair<typename std::vector<MessageContents>::const_iterator, bool>
 template <typename MessageContents>
 class OpData {
  public:
-  OpData(int successes_required, std::function<void(MessageContents)> callback);
-  void HandleResponseContents(MessageContents&& response_contents);
+  OpData(int successes_required, std::function<void(MessageContents, maidsafe_error)> callback);
+  void HandleResponseContents(MessageContents&& response_contents, maidsafe_error error);
 
  private:
   OpData(const OpData&);
@@ -106,7 +106,7 @@ class OpData {
 
   mutable std::mutex mutex_;
   int successes_required_;
-  std::function<void(MessageContents)> callback_;
+  std::function<void(MessageContents, maidsafe_error)> callback_;
   std::vector<MessageContents> responses_;
   bool callback_executed_;
 };
@@ -144,7 +144,7 @@ GetSuccessOrMostFrequentResponse(const std::vector<MessageContents>& responses,
 
 template <typename MessageContents>
 OpData<MessageContents>::OpData(int successes_required,
-                                std::function<void(MessageContents)> callback)
+                                std::function<void(MessageContents, maidsafe_error)> callback)
     : mutex_(),
       successes_required_(successes_required),
       callback_(callback),
@@ -157,9 +157,10 @@ OpData<MessageContents>::OpData(int successes_required,
 }
 
 template <typename MessageContents>
-void OpData<MessageContents>::HandleResponseContents(MessageContents&& response_contents) {
+void OpData<MessageContents>::HandleResponseContents(MessageContents&& response_contents,
+                                                     maidsafe_error error) {
   LOG(kVerbose) << "OpData<MessageContents>::HandleResponseContents";
-  std::function<void(MessageContents)> callback;
+  std::function<void(MessageContents, maidsafe_error)> callback;
   std::unique_ptr<MessageContents> result_ptr;
   {
     std::lock_guard<std::mutex> lock(mutex_);
@@ -175,6 +176,11 @@ void OpData<MessageContents>::HandleResponseContents(MessageContents&& response_
       callback = callback_;
       callback_executed_ = true;
       result_ptr = std::unique_ptr<MessageContents>(new MessageContents(*result.first));
+    } else if (error.code() == make_error_code(RoutingErrors::timed_out) ||
+               error.code() == make_error_code(RoutingErrors::timer_cancelled)) {
+      callback = callback_;
+      callback_executed_ = true;
+      result_ptr = std::unique_ptr<MessageContents>(new MessageContents());
     } else {
       LOG(kWarning) << "OpData<MessageContents>::HandleResponseContents"
                     << " incorrect result or not enough result";
@@ -182,7 +188,7 @@ void OpData<MessageContents>::HandleResponseContents(MessageContents&& response_
     }
   }
   LOG(kInfo) << "OpData<MessageContents>::HandleResponseContents call back";
-  callback(*result_ptr);
+  callback(*result_ptr, error);
 }
 
 }  // namespace nfs

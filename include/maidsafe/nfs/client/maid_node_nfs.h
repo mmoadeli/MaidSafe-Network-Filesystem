@@ -219,18 +219,18 @@ boost::future<void> MaidNodeNfs::Put(const Data& data,
   NodeId node_id;
   passport::PublicPmid::Name pmid_hint(Identity((node_id.string())));
 
-  auto response_functor([promise](const nfs_client::ReturnCode& result) {
-                           HandlePutResponseResult(result, promise);
+  auto response_functor([promise](const nfs_client::ReturnCode& result, maidsafe_error error) {
+                           HandlePutResponseResult(result, promise, error);
                         });
   auto op_data(std::make_shared<nfs::OpData<ResponseContents>>(routing::Parameters::group_size - 1,
                                                                response_functor));
   auto task_id(rpc_timers_.put_timer.NewTaskId());
   rpc_timers_.put_timer.AddTask(
       timeout,
-      [op_data, data](ResponseContents put_response) {
+      [op_data, data](ResponseContents put_response, maidsafe_error error) {
         LOG(kVerbose) << "MaidNodeNfs Put HandleResponseContents for "
                       << HexSubstr(data.name().value);
-        op_data->HandleResponseContents(std::move(put_response));
+        op_data->HandleResponseContents(std::move(put_response), error);
       },
       routing::Parameters::group_size - 1, task_id);
   rpc_timers_.put_timer.PrintTaskIds();
@@ -259,17 +259,17 @@ boost::future<void> MaidNodeNfs::CreateVersionTree(const DataName& data_name,
   LOG(kVerbose) << "MaidNodeNfs Create Version " << HexSubstr(data_name.value);
   typedef MaidNodeService::CreateVersionTreeResponse::Contents ResponseContents;
   auto promise(std::make_shared<boost::promise<void>>());
-  auto response_functor([promise](const nfs_client::ReturnCode& result) {
+  auto response_functor([promise](const nfs_client::ReturnCode& result, maidsafe_error) {
                            HandleCreateVersionTreeResult(result, promise);
                         });
   auto op_data(std::make_shared<nfs::OpData<ResponseContents>>(1, response_functor));
   auto task_id(rpc_timers_.create_version_tree_timer.NewTaskId());
   rpc_timers_.create_version_tree_timer.AddTask(
       timeout,
-      [op_data, data_name](ResponseContents get_response) {
+      [op_data, data_name](ResponseContents get_response, maidsafe_error error) {
         LOG(kVerbose) << "MaidNodeNfs CreateVersionTree HandleResponseContents for "
                       << HexSubstr(data_name.value);
-        op_data->HandleResponseContents(std::move(get_response));
+        op_data->HandleResponseContents(std::move(get_response), error);
       },
       routing::Parameters::group_size * 3, task_id);
   rpc_timers_.create_version_tree_timer.PrintTaskIds();
@@ -284,13 +284,15 @@ MaidNodeNfs::VersionNamesFuture MaidNodeNfs::GetVersions(
   LOG(kVerbose) << "MaidNodeNfs Get Version for " << HexSubstr(data_name.value);
   typedef MaidNodeService::GetVersionsResponse::Contents ResponseContents;
   auto promise(std::make_shared<VersionNamesPromise>());
-  auto response_functor([promise](const StructuredDataNameAndContentOrReturnCode&
-                                  result) { HandleGetVersionsOrBranchResult(result, promise); });
+  auto response_functor([promise](const StructuredDataNameAndContentOrReturnCode& result,
+                                  maidsafe_error) {
+                          HandleGetVersionsOrBranchResult(result, promise);
+                        });
   auto op_data(std::make_shared<nfs::OpData<ResponseContents>>(1, response_functor));
   auto task_id(rpc_timers_.get_versions_timer.NewTaskId());
   rpc_timers_.get_versions_timer.AddTask(
-      timeout, [op_data](ResponseContents get_versions_response) {
-                 op_data->HandleResponseContents(std::move(get_versions_response));
+      timeout, [op_data](ResponseContents get_versions_response, maidsafe_error error) {
+                 op_data->HandleResponseContents(std::move(get_versions_response), error);
                },
       // TODO(Fraser#5#): 2013-08-18 - Confirm expected count
       routing::Parameters::group_size * 2, task_id);
@@ -305,13 +307,15 @@ MaidNodeNfs::VersionNamesFuture MaidNodeNfs::GetBranch(
   LOG(kVerbose) << "MaidNodeNfs Get Branch for " << HexSubstr(data_name.value);
   typedef MaidNodeService::GetBranchResponse::Contents ResponseContents;
   auto promise(std::make_shared<VersionNamesPromise>());
-  auto response_functor([promise](const StructuredDataNameAndContentOrReturnCode &
-                                  result) { HandleGetVersionsOrBranchResult(result, promise); });
+  auto response_functor([promise](const StructuredDataNameAndContentOrReturnCode& result,
+                                  maidsafe_error) {
+                          HandleGetVersionsOrBranchResult(result, promise);
+                        });
   auto op_data(std::make_shared<nfs::OpData<ResponseContents>>(1, response_functor));
   auto task_id(rpc_timers_.get_branch_timer.NewTaskId());
   rpc_timers_.get_branch_timer.AddTask(timeout,
-      [op_data](ResponseContents get_branch_response) {
-          op_data->HandleResponseContents(std::move(get_branch_response));
+      [op_data](ResponseContents get_branch_response, maidsafe_error error) {
+          op_data->HandleResponseContents(std::move(get_branch_response), error);
       },
       // TODO(Fraser#5#): 2013-08-18 - Confirm expected count
       routing::Parameters::group_size * 2, task_id);
@@ -330,18 +334,20 @@ MaidNodeNfs::PutVersionFuture MaidNodeNfs::PutVersion(
   typedef MaidNodeService::PutVersionResponse::Contents ResponseContents;
   auto promise(
       std::make_shared<boost::promise<std::unique_ptr<StructuredDataVersions::VersionName>>>());
-  auto response_functor([promise](const nfs_client::TipOfTreeAndReturnCode& result) {
+  auto response_functor([promise](const nfs_client::TipOfTreeAndReturnCode& result,
+                                  maidsafe_error) {
                            HandlePutVersionResult(result, promise);
                         });
   auto op_data(std::make_shared<nfs::OpData<ResponseContents>>(1, response_functor));
   auto task_id(rpc_timers_.put_version_timer.NewTaskId());
   rpc_timers_.put_version_timer.AddTask(
       timeout,
-      [op_data, data_name, new_version_name, old_version_name](ResponseContents get_response) {
+      [op_data, data_name, new_version_name, old_version_name](ResponseContents get_response,
+                                                               maidsafe_error error) {
         LOG(kVerbose) << "MaidNodeNfs PutVersion HandleResponseContents put new version "
                       << DebugId(new_version_name.id) << " after old version "
                       << DebugId(old_version_name.id) << " for " << HexSubstr(data_name.value);
-        op_data->HandleResponseContents(std::move(get_response));
+        op_data->HandleResponseContents(std::move(get_response), error);
       },
       routing::Parameters::group_size * 3, task_id);
   rpc_timers_.put_version_timer.PrintTaskIds();

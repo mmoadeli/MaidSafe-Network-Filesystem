@@ -117,10 +117,10 @@ void GetHandler::Get(const DataName& data_name,
   }
   get_timer_.AddTask(timeout,
                      [op_data, data_name, task_id, this](
-                         DataNameAndContentOrReturnCode get_response) {
+                         DataNameAndContentOrReturnCode get_response, maidsafe_error error) {
                         LOG(kVerbose) << "GetHandler Get HandleResponseContents for "
                                       << HexSubstr(data_name.value);
-                        op_data->HandleResponseContents(std::move(get_response));
+                        op_data->HandleResponseContents(std::move(get_response), error);
                         {
                           std::lock_guard<std::mutex> lock(mutex_);
                           auto iter(std::find_if(std::begin(get_info_), std::end(get_info_),

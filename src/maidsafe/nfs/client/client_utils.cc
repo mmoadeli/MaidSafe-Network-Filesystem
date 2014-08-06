@@ -47,15 +47,18 @@ void HandleGetVersionsOrBranchResult(
 }
 
 void HandleCreateAccountResult(const ReturnCode& result,
-                               std::shared_ptr<boost::promise<void>> promise) {
+                               std::shared_ptr<boost::promise<void>> promise, maidsafe_error error) {
   LOG(kVerbose) << "nfs_client::HandleCreateAccountResult";
   try {
     if (nfs::IsSuccess(result)) {
       LOG(kInfo) << "Create Account succeeded";
       promise->set_value();
+    } else if (error.code() != make_error_code(CommonErrors::success)) {
+      promise->set_exception(error);
     } else {
       LOG(kWarning) << "nfs_client::HandleCreateAccountResult error during create account";
-      boost::throw_exception(result.value);
+      promise->set_exception(result.value);
+      // boost::throw_exception(result.value);
     }
   }
   catch (...) {
@@ -65,15 +68,18 @@ void HandleCreateAccountResult(const ReturnCode& result,
 }
 
 void HandlePutResponseResult(const ReturnCode& result,
-                             std::shared_ptr<boost::promise<void>> promise) {
+                             std::shared_ptr<boost::promise<void>> promise, maidsafe_error error) {
   LOG(kVerbose) << "nfs_client::HandlePutResponseResult";
-  try {
+  try {   
     if (nfs::IsSuccess(result)) {
       LOG(kInfo) << "Put succeeded";
       promise->set_value();
+    } else if (error.code() != make_error_code(CommonErrors::success)) {
+      promise->set_exception(error);
     } else {
       LOG(kWarning) << "nfs_client::HandlePutResponseResult error in Put";
-      boost::throw_exception(result.value);
+      promise->set_exception(result.value);
+      // boost::throw_exception(result.value);
     }
   }
   catch (...) {
@@ -83,16 +89,20 @@ void HandlePutResponseResult(const ReturnCode& result,
 }
 
 void HandlePmidHealthResult(const AvailableSizeAndReturnCode& result,
-                            std::shared_ptr<boost::promise<uint64_t>> promise) {
+                            std::shared_ptr<boost::promise<uint64_t>> promise,
+                            maidsafe_error error) {
   LOG(kVerbose) << "nfs_client::HandlePmidHealthResult";
   try {
     if (nfs::IsSuccess(result)) {
       LOG(kInfo) << "Get PmidHealth succeeded, returned available_size : "
                  << result.available_size.available_size;
       promise->set_value(result.available_size.available_size);
+    } else if (error.code() != make_error_code(CommonErrors::success)) {
+      promise->set_exception(error);
     } else {
       LOG(kWarning) << "nfs_client::HandlePmidHealthResult error during getPmidHealth";
-      boost::throw_exception(result.return_code.value);
+      promise->set_exception(result.return_code.value);
+      // boost::throw_exception(result.return_code.value);
     }
   }
   catch (...) {

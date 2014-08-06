@@ -65,7 +65,9 @@ TYPED_TEST(ServiceTest, BEH_All) {
 
   // Set timer callback
   auto task_id(get_timer.NewTaskId());
-  auto callback([immutable_data](typename GetResponse::Contents returned_contents) {
+  auto callback([immutable_data](typename GetResponse::Contents returned_contents,
+                                 maidsafe_error error) {
+      EXPECT_EQ(make_error_code(CommonErrors::success), error.code());
       ImmutableData retrieved(ImmutableData::Name(returned_contents.name.raw_name),
                               ImmutableData::serialised_type(
                                   NonEmptyString(returned_contents.content->data)));

@@ -219,15 +219,15 @@ boost::future<void> MaidNodeNfs::CreateAccount(
     const std::chrono::steady_clock::duration& timeout) {
   typedef MaidNodeService::CreateAccountResponse::Contents ResponseContents;
   auto promise(std::make_shared<boost::promise<void>>());
-  auto response_functor([promise](const ResponseContents &result) {
-      HandleCreateAccountResult(result, promise);
+  auto response_functor([promise](const ResponseContents &result, maidsafe_error error) {
+      HandleCreateAccountResult(result, promise, error);
   });
   auto op_data(std::make_shared<nfs::OpData<ResponseContents>>(
       routing::Parameters::group_size - 1, response_functor));
   auto task_id(rpc_timers_.create_account_timer.NewTaskId());
   rpc_timers_.create_account_timer.AddTask(
-      timeout, [op_data](ResponseContents create_account_response) {
-                 op_data->HandleResponseContents(std::move(create_account_response));
+      timeout, [op_data](ResponseContents create_account_response, maidsafe_error error) {
+                 op_data->HandleResponseContents(std::move(create_account_response), error);
                },
       // TODO(Fraser#5#): 2013-08-18 - Confirm expected count
       routing::Parameters::group_size * 2, task_id);
@@ -244,15 +244,15 @@ boost::future<void> MaidNodeNfs::RegisterPmid(const passport::Pmid& pmid,
   nfs_vault::PmidRegistration pmid_registration{ kMaid_, pmid, false };
   typedef MaidNodeService::RegisterPmidResponse::Contents ResponseContents;
   auto promise(std::make_shared<boost::promise<void>>());
-  auto response_functor([promise](const ResponseContents &result) {
+  auto response_functor([promise](const ResponseContents &result, maidsafe_error) {
       HandleRegisterPmidResult(result, promise);
   });
   auto op_data(std::make_shared<nfs::OpData<ResponseContents>>(
       routing::Parameters::group_size - 1, response_functor));
   auto task_id(rpc_timers_.register_pmid_timer.NewTaskId());
   rpc_timers_.register_pmid_timer.AddTask(
-      timeout, [op_data](ResponseContents create_account_response) {
-                 op_data->HandleResponseContents(std::move(create_account_response));
+      timeout, [op_data](ResponseContents create_account_response, maidsafe_error error) {
+                 op_data->HandleResponseContents(std::move(create_account_response), error);
                },
       // TODO(Mahmoud): Confirm expected count
       routing::Parameters::group_size - 1, task_id);
@@ -269,15 +269,15 @@ MaidNodeNfs::PmidHealthFuture MaidNodeNfs::GetPmidHealth(
     const std::chrono::steady_clock::duration& timeout) {
   typedef MaidNodeService::PmidHealthResponse::Contents ResponseContents;
   auto promise(std::make_shared<boost::promise<uint64_t>>());
-  auto response_functor([promise](const ResponseContents& result) {
-      HandlePmidHealthResult(result, promise);
+  auto response_functor([promise](const ResponseContents& result, maidsafe_error error) {
+      HandlePmidHealthResult(result, promise, error);
   });
   auto op_data(std::make_shared<nfs::OpData<ResponseContents>>(
       routing::Parameters::group_size - 1, response_functor));
   auto task_id(rpc_timers_.pmid_health_timer.NewTaskId());
   rpc_timers_.pmid_health_timer.AddTask(
-      timeout, [op_data](ResponseContents pmid_health_response) {
-                 op_data->HandleResponseContents(std::move(pmid_health_response));
+      timeout, [op_data](ResponseContents pmid_health_response, maidsafe_error error) {
+                 op_data->HandleResponseContents(std::move(pmid_health_response), error);
                },
       // TODO(Fraser#5#): 2013-08-18 - Confirm expected count
       routing::Parameters::group_size - 1, task_id);

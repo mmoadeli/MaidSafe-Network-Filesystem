@@ -41,22 +41,24 @@ template <typename Data>
 struct HandleGetResult {
   explicit HandleGetResult(std::shared_ptr<boost::promise<Data>> promise_in)
       : promise(std::move(promise_in)) {}
-  void operator()(const DataNameAndContentOrReturnCode& result) const;
+  void operator()(const DataNameAndContentOrReturnCode& result, maidsafe_error error) const;
   std::shared_ptr<boost::promise<Data>> promise;
 };
 
 void HandlePutResponseResult(const ReturnCode& result,
-                             std::shared_ptr<boost::promise<void>> promise);
+                             std::shared_ptr<boost::promise<void>> promise, maidsafe_error error);
 
 void HandleGetVersionsOrBranchResult(
     const StructuredDataNameAndContentOrReturnCode& result,
     std::shared_ptr<boost::promise<std::vector<StructuredDataVersions::VersionName>>> promise);
 
 void HandleCreateAccountResult(const ReturnCode& result,
-                               std::shared_ptr<boost::promise<void>> promise);
+                               std::shared_ptr<boost::promise<void>> promise,
+                               maidsafe_error error);
 
 void HandlePmidHealthResult(const AvailableSizeAndReturnCode& result,
-                            std::shared_ptr<boost::promise<uint64_t>> promise);
+                            std::shared_ptr<boost::promise<uint64_t>> promise,
+                            maidsafe_error error);
 
 void HandleCreateVersionTreeResult(const ReturnCode& result,
                                    std::shared_ptr<boost::promise<void>> promise);
@@ -70,13 +72,15 @@ void HandleRegisterPmidResult(const ReturnCode& result,
 
 // ==================== Implementation =============================================================
 template <typename Data>
-void HandleGetResult<Data>::operator()(const DataNameAndContentOrReturnCode& result) const {
+void HandleGetResult<Data>::operator()(const DataNameAndContentOrReturnCode& result,
+                                       maidsafe_error error) const {
   LOG(kVerbose) << "HandleGetResult<Data>::operator()";
   try {
     if (result.content) {
       if (result.name.type != Data::Tag::kValue) {
         LOG(kError) << "HandleGetResult incorrect returned data";
-        BOOST_THROW_EXCEPTION(MakeError(CommonErrors::invalid_parameter));
+        // BOOST_THROW_EXCEPTION(MakeError(CommonErrors::invalid_parameter));
+        promise->set_exception(MakeError(CommonErrors::invalid_parameter));
       }
       LOG(kInfo) << "HandleGetResult fetched chunk has name : "
                  << HexSubstr(result.name.raw_name) << " and content : "
@@ -87,10 +91,12 @@ void HandleGetResult<Data>::operator()(const DataNameAndContentOrReturnCode& res
     } else if (result.return_code) {
       LOG(kWarning) << "HandleGetResult don't have a result but having a return code "
                     << result.return_code->value.what();
-      boost::throw_exception(result.return_code->value);
+      promise->set_exception(result.return_code->value);
+      // boost::throw_exception(result.return_code->value);
     } else {
       LOG(kError) << "HandleGetResult result uninitialised";
-      BOOST_THROW_EXCEPTION(MakeError(CommonErrors::uninitialised));
+      promise->set_exception(error);
+      // BOOST_THROW_EXCEPTION(MakeError(CommonErrors::uninitialised));
     }
   }
   catch (...) {

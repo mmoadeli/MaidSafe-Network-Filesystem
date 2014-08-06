@@ -103,10 +103,10 @@ boost::future<typename DataName::data_type> DataGetter::Get(
   auto op_data(std::make_shared<nfs::OpData<ResponseContents>>(1, response_functor));
   auto task_id(get_timer_.NewTaskId());
   get_timer_.AddTask(timeout,
-                     [op_data, data_name](ResponseContents get_response) {
+                     [op_data, data_name](ResponseContents get_response, maidsafe_error error) {
                          LOG(kVerbose) << "DataGetter Get HandleResponseContents for "
                                        << HexSubstr(data_name.value);
-                         op_data->HandleResponseContents(std::move(get_response));
+                         op_data->HandleResponseContents(std::move(get_response), error);
                      },
                       // TODO(Fraser#5#): 2013-08-18 - Confirm expected count
                       routing::Parameters::group_size * 2, task_id);
@@ -119,12 +119,14 @@ DataGetter::VersionNamesFuture DataGetter::GetVersions(
     const DataName& data_name, const std::chrono::steady_clock::duration& timeout) {
   typedef DataGetterService::GetVersionsResponse::Contents ResponseContents;
   auto promise(std::make_shared<VersionNamesPromise>());
-  auto response_functor([promise](const StructuredDataNameAndContentOrReturnCode&
-                                  result) { HandleGetVersionsOrBranchResult(result, promise); });
+  auto response_functor([promise](const StructuredDataNameAndContentOrReturnCode& result,
+                                  maidsafe_error) {
+                          HandleGetVersionsOrBranchResult(result, promise);
+                        });
   auto op_data(std::make_shared<nfs::OpData<ResponseContents>>(1, response_functor));
   auto task_id(get_versions_timer_.NewTaskId());
   get_versions_timer_.AddTask(
-      timeout, [op_data](ResponseContents get_versions_response) {
+      timeout, [op_data](ResponseContents get_versions_response, maidsafe_error) {
                  op_data->HandleResponseContents(std::move(get_versions_response));
                },
       // TODO(Fraser#5#): 2013-08-18 - Confirm expected count
@@ -139,13 +141,17 @@ DataGetter::VersionNamesFuture DataGetter::GetBranch(
     const std::chrono::steady_clock::duration& timeout) {
   typedef DataGetterService::GetBranchResponse::Contents ResponseContents;
   auto promise(std::make_shared<VersionNamesPromise>());
-  auto response_functor([promise](const StructuredDataNameAndContentOrReturnCode &
-                                  result) { HandleGetVersionsOrBranchResult(result, promise); });
+  auto response_functor([promise](const StructuredDataNameAndContentOrReturnCode& result,
+                                  maidsafe_error) {
+                          HandleGetVersionsOrBranchResult(result, promise);
+                        });
   auto op_data(std::make_shared<nfs::OpData<ResponseContents>>(1, response_functor));
-  auto task_id(get_branch_timer_.AddTask(timeout, [op_data](ResponseContents get_branch_response) {
-                                                    op_data->HandleResponseContents(
-                                                        std::move(get_branch_response));
-                                                  },
+  auto task_id(get_branch_timer_.AddTask(timeout,
+                                         [op_data](ResponseContents get_branch_response,
+                                                   maidsafe_error) {
+                                            op_data->HandleResponseContents(
+                                              std::move(get_branch_response));
+                                         },
                                          // TODO(Fraser#5#): 2013-08-18 - Confirm expected count
                                          routing::Parameters::group_size * 2));
   dispatcher_.SendGetBranchRequest(task_id, data_name, branch_tip);
