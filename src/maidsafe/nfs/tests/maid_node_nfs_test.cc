@@ -60,8 +60,11 @@ class MaidNodeNfsTest : public testing::Test {
     chunks_.clear();
     for (auto index(iterations); index > 0; --index) {
       chunks_.emplace_back(NonEmptyString(RandomString(chunk_size)));
-      std::cout << "Generated chunk " << iterations - index
-                << " with id : " << DebugId(chunks_.back().name()) << std::endl;
+      std::string str_count(std::to_string(iterations - index));
+      if (iterations - index < 10)
+        str_count.insert(std::begin(str_count), ' ');
+      LOG(kInfo) << "Generated chunk " << str_count << " with id : "
+                 << DebugId(chunks_.back().name());
     }
   }
 
@@ -208,6 +211,53 @@ TEST_F(MaidNodeNfsTest, FUNC_FailingGet) {
   AddClient();
   auto future(clients_.back()->Get<ImmutableData::Name>(data.name()));
   EXPECT_THROW(future.get(), std::exception) << "must have failed";
+}
+
+TEST_F(MaidNodeNfsTest, FUNC_GetTimeout) {
+  AddClient();
+  ImmutableData data(NonEmptyString(RandomString(kTestChunkSize)));
+  try {
+    auto future(clients_.back()->Put(data));
+    EXPECT_NO_THROW(future.get());
+  }
+  catch (...) {
+    EXPECT_TRUE(false) << "Failed to put: " << DebugId(NodeId(data.name()->string()));
+  }
+
+  std::chrono::steady_clock::duration timeout(std::chrono::microseconds(1));
+  auto future(clients_.back()->Get<ImmutableData::Name>(data.name(), timeout));
+
+  try {
+    auto retrieved(future.get());
+    EXPECT_TRUE(false) << "Unexpected get success: " << DebugId(NodeId(data.name()->string()));
+  }
+  catch (const maidsafe_error& error) {
+    EXPECT_EQ(make_error_code(RoutingErrors::timed_out), error.code());
+  }
+}
+
+TEST_F(MaidNodeNfsTest, FUNC_GetCancelled) {
+  AddClient();
+  ImmutableData data(NonEmptyString(RandomString(kTestChunkSize)));
+  try {
+    auto future(clients_.back()->Put(data));
+    EXPECT_NO_THROW(future.get());
+  }
+  catch (...) {
+    EXPECT_TRUE(false) << "Failed to put: " << DebugId(NodeId(data.name()->string()));
+  }
+
+  std::chrono::steady_clock::duration timeout(std::chrono::minutes(10));
+  auto future(clients_.back()->Get<ImmutableData::Name>(data.name(), timeout));
+  EXPECT_NO_THROW(clients_.back()->Stop());
+
+  try {
+    auto retrieved(future.get());
+    EXPECT_TRUE(false) << "Unexpected get success: " << DebugId(NodeId(data.name()->string()));
+  }
+  catch (const maidsafe_error& error) {
+    EXPECT_EQ(make_error_code(RoutingErrors::timer_cancelled), error.code());
+  }
 }
 
 TEST_F(MaidNodeNfsTest, FUNC_PutGet) {

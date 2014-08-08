@@ -97,6 +97,9 @@ AvailableSizeAndReturnCode::AvailableSizeAndReturnCode(uint64_t size,
                                                        const ReturnCode& return_code_in)
     : available_size(size), return_code(return_code_in) {}
 
+AvailableSizeAndReturnCode::AvailableSizeAndReturnCode(maidsafe_error error)
+    : available_size(0), return_code(error) {}
+
 AvailableSizeAndReturnCode::AvailableSizeAndReturnCode(const AvailableSizeAndReturnCode& other)
     : available_size(other.available_size), return_code(other.return_code) {}
 
@@ -143,6 +146,9 @@ DataNameAndReturnCode::DataNameAndReturnCode() : name(), return_code() {}
 DataNameAndReturnCode::DataNameAndReturnCode(nfs_vault::DataName data_name, ReturnCode code)
     : name(std::move(data_name)), return_code(std::move(code)) {}
 
+DataNameAndReturnCode::DataNameAndReturnCode(maidsafe_error error)
+    : name(), return_code(error) {}
+
 DataNameAndReturnCode::DataNameAndReturnCode(const DataNameAndReturnCode& other)
     : name(other.name), return_code(other.return_code) {}
 
@@ -182,16 +188,17 @@ void swap(DataNameAndReturnCode& lhs, DataNameAndReturnCode& rhs) MAIDSAFE_NOEXC
 
 // ==================== DataNamesAndReturnCode =====================================================
 DataNamesAndReturnCode::DataNamesAndReturnCode(const ReturnCode& code)
-    : names(),
-      return_code(code) {}
+    : names(), return_code(code) {}
 
 DataNamesAndReturnCode::DataNamesAndReturnCode(const std::vector<nfs_vault::DataName>& data_names,
                                                const ReturnCode& code)
-    : names(),
-      return_code(code) {
+    : names(), return_code(code) {
   for (auto data_name : data_names)
     names.insert(data_name);
 }
+
+DataNamesAndReturnCode::DataNamesAndReturnCode(maidsafe_error error)
+    : names(), return_code(error) {}
 
 DataNamesAndReturnCode::DataNamesAndReturnCode(const DataNamesAndReturnCode& other)
     : names(other.names), return_code(other.return_code) {}
@@ -243,6 +250,9 @@ void swap(DataNamesAndReturnCode& lhs, DataNamesAndReturnCode& rhs) MAIDSAFE_NOE
 DataNameVersionAndReturnCode::DataNameVersionAndReturnCode()
     : data_name_and_version(), return_code() {}
 
+DataNameVersionAndReturnCode::DataNameVersionAndReturnCode(maidsafe_error error)
+    : data_name_and_version(), return_code(error) {}
+
 DataNameVersionAndReturnCode::DataNameVersionAndReturnCode(
     const DataNameVersionAndReturnCode& other)
     : data_name_and_version(other.data_name_and_version), return_code(other.return_code) {}
@@ -288,6 +298,9 @@ void swap(DataNameVersionAndReturnCode& lhs, DataNameVersionAndReturnCode& rhs) 
 // ==================== DataNameOldNewVersionAndReturnCode =========================================
 DataNameOldNewVersionAndReturnCode::DataNameOldNewVersionAndReturnCode()
     : data_name_old_new_version(), return_code() {}
+
+DataNameOldNewVersionAndReturnCode::DataNameOldNewVersionAndReturnCode(maidsafe_error error)
+    : data_name_old_new_version(), return_code(error) {}
 
 DataNameOldNewVersionAndReturnCode::DataNameOldNewVersionAndReturnCode(
     const DataNameOldNewVersionAndReturnCode& other)
@@ -338,6 +351,9 @@ void swap(DataNameOldNewVersionAndReturnCode& lhs,
 // ==================== DataAndReturnCode ==========================================================
 DataAndReturnCode::DataAndReturnCode() : data(), return_code() {}
 
+DataAndReturnCode::DataAndReturnCode(maidsafe_error error)
+    : data(), return_code(error) {}
+
 DataAndReturnCode::DataAndReturnCode(const DataAndReturnCode& other)
     : data(other.data), return_code(other.return_code) {}
 
@@ -382,6 +398,9 @@ DataNameAndContentOrReturnCode::DataNameAndContentOrReturnCode(
 
 DataNameAndContentOrReturnCode::DataNameAndContentOrReturnCode()
     : name(), content(), return_code() {}
+
+DataNameAndContentOrReturnCode::DataNameAndContentOrReturnCode(maidsafe_error error)
+    : name(), content(), return_code(error) {}
 
 DataNameAndContentOrReturnCode::DataNameAndContentOrReturnCode(
     const DataNameAndContentOrReturnCode& other)
@@ -457,6 +476,10 @@ StructuredDataNameAndContentOrReturnCode::StructuredDataNameAndContentOrReturnCo
     : structured_data(), data_name_and_return_code() {}
 
 StructuredDataNameAndContentOrReturnCode::StructuredDataNameAndContentOrReturnCode(
+    maidsafe_error error)
+    : structured_data(), data_name_and_return_code(error) {}
+
+StructuredDataNameAndContentOrReturnCode::StructuredDataNameAndContentOrReturnCode(
     const StructuredDataNameAndContentOrReturnCode& other)
     : structured_data(other.structured_data),
       data_name_and_return_code(other.data_name_and_return_code) {}
@@ -525,8 +548,8 @@ void swap(StructuredDataNameAndContentOrReturnCode& lhs,
 TipOfTreeAndReturnCode::TipOfTreeAndReturnCode()
     : tip_of_tree(), return_code() {}
 
-TipOfTreeAndReturnCode::TipOfTreeAndReturnCode(const ReturnCode return_code_in)
-    : tip_of_tree(), return_code(return_code_in) {}
+TipOfTreeAndReturnCode::TipOfTreeAndReturnCode(maidsafe_error error)
+    : tip_of_tree(), return_code(error) {}
 
 TipOfTreeAndReturnCode::TipOfTreeAndReturnCode(
     const TipOfTreeAndReturnCode& other)
@@ -582,6 +605,9 @@ void swap(TipOfTreeAndReturnCode& lhs, TipOfTreeAndReturnCode& rhs) MAIDSAFE_NOE
 // ==================== DataPmidHintAndReturnCode ==================================================
 DataPmidHintAndReturnCode::DataPmidHintAndReturnCode() : data_and_pmid_hint(), return_code() {}
 
+DataPmidHintAndReturnCode::DataPmidHintAndReturnCode(maidsafe_error error)
+    : data_and_pmid_hint(), return_code(error) {}
+
 DataPmidHintAndReturnCode::DataPmidHintAndReturnCode(const DataPmidHintAndReturnCode& other)
     : data_and_pmid_hint(other.data_and_pmid_hint), return_code(other.return_code) {}
 
@@ -627,6 +653,9 @@ PmidRegistrationAndReturnCode::PmidRegistrationAndReturnCode()
 PmidRegistrationAndReturnCode::PmidRegistrationAndReturnCode(
     nfs_vault::PmidRegistration pmid_health, ReturnCode return_code_in)
         : pmid_registration(std::move(pmid_health)), return_code(std::move(return_code_in)) {}
+
+PmidRegistrationAndReturnCode::PmidRegistrationAndReturnCode(maidsafe_error error)
+    : pmid_registration(), return_code(error) {}
 
 PmidRegistrationAndReturnCode::PmidRegistrationAndReturnCode(
     const PmidRegistrationAndReturnCode& other)
@@ -686,6 +715,9 @@ DataNameAndSpaceAndReturnCode::DataNameAndSpaceAndReturnCode(const DataTagValue&
       available_space(available_space_in),
       return_code(std::move(code_in)) {}
 
+DataNameAndSpaceAndReturnCode::DataNameAndSpaceAndReturnCode(maidsafe_error error)
+    : name(), available_space(), return_code(error) {}
+
 DataNameAndSpaceAndReturnCode::DataNameAndSpaceAndReturnCode(DataNameAndSpaceAndReturnCode&& other)
     : name(std::move(other.name)),
       available_space(std::move(other.available_space)),
@@ -732,12 +764,15 @@ bool operator==(const DataNameAndSpaceAndReturnCode& lhs,
 // ==================== PmidHealthAndReturnCode ====================================================
 PmidHealthAndReturnCode::PmidHealthAndReturnCode(const nfs_vault::PmidHealth& pmid_health_in,
                                                  const nfs_client::ReturnCode& code_in)
-      : pmid_health(pmid_health_in), return_code(code_in) {
+    : pmid_health(pmid_health_in), return_code(code_in) {
   LOG(kVerbose) << "PmidHealthAndReturnCode pmid_health.serialised_pmid_health : "
                 << HexSubstr(pmid_health.serialised_pmid_health)
                 << " pmid_health.Serialise() " << HexSubstr(pmid_health.Serialise())
                 << " return_code : " << return_code.value.what();
 }
+
+PmidHealthAndReturnCode::PmidHealthAndReturnCode(maidsafe_error error)
+    : pmid_health(), return_code(error) {}
 
 PmidHealthAndReturnCode::PmidHealthAndReturnCode(const std::string& serialised_copy) {
   protobuf::PmidHealthAndReturnCode pmid_health_proto;

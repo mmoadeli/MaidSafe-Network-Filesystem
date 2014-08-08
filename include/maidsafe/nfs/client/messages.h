@@ -72,6 +72,7 @@ void swap(ReturnCode& lhs, ReturnCode& rhs) MAIDSAFE_NOEXCEPT;
 struct AvailableSizeAndReturnCode {
   AvailableSizeAndReturnCode();
   AvailableSizeAndReturnCode(uint64_t size, const ReturnCode& return_code);
+  explicit AvailableSizeAndReturnCode(maidsafe_error error);
   AvailableSizeAndReturnCode(const AvailableSizeAndReturnCode& other);
   AvailableSizeAndReturnCode(AvailableSizeAndReturnCode&& other);
   AvailableSizeAndReturnCode& operator=(AvailableSizeAndReturnCode other);
@@ -93,6 +94,7 @@ struct DataNameAndReturnCode {
       : name(data_name), return_code(return_code_in) {}
   DataNameAndReturnCode();
   DataNameAndReturnCode(nfs_vault::DataName data_name, ReturnCode code);
+  explicit DataNameAndReturnCode(maidsafe_error error);
   DataNameAndReturnCode(const DataNameAndReturnCode& other);
   DataNameAndReturnCode(DataNameAndReturnCode&& other);
   DataNameAndReturnCode& operator=(DataNameAndReturnCode other);
@@ -112,6 +114,7 @@ struct DataNamesAndReturnCode {
   explicit DataNamesAndReturnCode(const ReturnCode& code);
   DataNamesAndReturnCode(const std::vector<nfs_vault::DataName>& data_names,
                          const ReturnCode& code);
+  explicit DataNamesAndReturnCode(maidsafe_error error);
   DataNamesAndReturnCode(const DataNamesAndReturnCode &other);
   DataNamesAndReturnCode(DataNamesAndReturnCode&& other);
   DataNamesAndReturnCode& operator=(DataNamesAndReturnCode other);
@@ -136,6 +139,7 @@ void swap(DataNamesAndReturnCode& lhs, DataNamesAndReturnCode& rhs) MAIDSAFE_NOE
 // ==================== DataNameVersionAndReturnCode ===============================================
 struct DataNameVersionAndReturnCode {
   DataNameVersionAndReturnCode();
+  explicit DataNameVersionAndReturnCode(maidsafe_error error);
   DataNameVersionAndReturnCode(const DataNameVersionAndReturnCode& other);
   DataNameVersionAndReturnCode(DataNameVersionAndReturnCode&& other);
   DataNameVersionAndReturnCode& operator=(DataNameVersionAndReturnCode other);
@@ -153,6 +157,7 @@ void swap(DataNameVersionAndReturnCode& lhs, DataNameVersionAndReturnCode& rhs) 
 // ==================== DataNameOldNewVersionAndReturnCode =========================================
 struct DataNameOldNewVersionAndReturnCode {
   DataNameOldNewVersionAndReturnCode();
+  explicit DataNameOldNewVersionAndReturnCode(maidsafe_error error);
   DataNameOldNewVersionAndReturnCode(const DataNameOldNewVersionAndReturnCode& other);
   DataNameOldNewVersionAndReturnCode(DataNameOldNewVersionAndReturnCode&& other);
   DataNameOldNewVersionAndReturnCode& operator=(DataNameOldNewVersionAndReturnCode other);
@@ -172,6 +177,7 @@ void swap(DataNameOldNewVersionAndReturnCode& lhs,
 // ==================== DataAndReturnCode ==========================================================
 struct DataAndReturnCode {
   DataAndReturnCode();
+  explicit DataAndReturnCode(maidsafe_error error);
   DataAndReturnCode(const DataAndReturnCode& other);
   DataAndReturnCode(DataAndReturnCode&& other);
   DataAndReturnCode& operator=(DataAndReturnCode other);
@@ -198,6 +204,7 @@ struct DataNameAndContentOrReturnCode {
       : name(nfs_vault::DataName(data_name)), content(), return_code(return_code_in) {}
 
   DataNameAndContentOrReturnCode();
+  explicit DataNameAndContentOrReturnCode(maidsafe_error error);
   DataNameAndContentOrReturnCode(const DataNameAndContentOrReturnCode& other);
   DataNameAndContentOrReturnCode(DataNameAndContentOrReturnCode&& other);
   DataNameAndContentOrReturnCode& operator=(DataNameAndContentOrReturnCode other);
@@ -222,6 +229,7 @@ void swap(DataNameAndContentOrReturnCode& lhs,
 // ==================== StructuredDataNameAndContentOrReturnCode ===================================
 struct StructuredDataNameAndContentOrReturnCode {
   StructuredDataNameAndContentOrReturnCode();
+  explicit StructuredDataNameAndContentOrReturnCode(maidsafe_error error);
   StructuredDataNameAndContentOrReturnCode(const StructuredDataNameAndContentOrReturnCode& other);
   StructuredDataNameAndContentOrReturnCode(StructuredDataNameAndContentOrReturnCode&& other);
   StructuredDataNameAndContentOrReturnCode& operator=(
@@ -242,7 +250,7 @@ void swap(StructuredDataNameAndContentOrReturnCode& lhs,
 // =============================== TipOfTreeAndReturnCode =======================================
 struct TipOfTreeAndReturnCode {
   TipOfTreeAndReturnCode();
-  explicit TipOfTreeAndReturnCode(const ReturnCode return_code_in);
+  explicit TipOfTreeAndReturnCode(maidsafe_error error);
   TipOfTreeAndReturnCode(const TipOfTreeAndReturnCode& other);
   TipOfTreeAndReturnCode(TipOfTreeAndReturnCode&& other);
   TipOfTreeAndReturnCode& operator=(TipOfTreeAndReturnCode other);
@@ -260,6 +268,7 @@ void swap(TipOfTreeAndReturnCode& lhs, TipOfTreeAndReturnCode& rhs) MAIDSAFE_NOE
 // ==================== DataPmidHintAndReturnCode ==================================================
 struct DataPmidHintAndReturnCode {
   DataPmidHintAndReturnCode();
+  explicit DataPmidHintAndReturnCode(maidsafe_error error);
   DataPmidHintAndReturnCode(const DataPmidHintAndReturnCode& other);
   DataPmidHintAndReturnCode(DataPmidHintAndReturnCode&& other);
   DataPmidHintAndReturnCode& operator=(DataPmidHintAndReturnCode other);
@@ -279,6 +288,7 @@ struct PmidRegistrationAndReturnCode {
   PmidRegistrationAndReturnCode();
   PmidRegistrationAndReturnCode(nfs_vault::PmidRegistration pmid_health,
                                 ReturnCode return_code_in);
+  explicit PmidRegistrationAndReturnCode(maidsafe_error error);
   PmidRegistrationAndReturnCode(const PmidRegistrationAndReturnCode& other);
   PmidRegistrationAndReturnCode(PmidRegistrationAndReturnCode&& other);
   PmidRegistrationAndReturnCode& operator=(PmidRegistrationAndReturnCode other);
@@ -297,12 +307,13 @@ void swap(PmidRegistrationAndReturnCode& lhs, PmidRegistrationAndReturnCode& rhs
 struct DataNameAndSpaceAndReturnCode {
   template <typename DataNameType>
   DataNameAndSpaceAndReturnCode(const DataNameType& name_in, int64_t available_space_in,
-                                const nfs_client::ReturnCode& code_in)
+                                const ReturnCode& code_in)
       : name(name_in), available_space(available_space_in), return_code(code_in) {}
 
   DataNameAndSpaceAndReturnCode(const DataTagValue& type_in, const Identity& name_in,
                                 int64_t available_space_in,
-                                const nfs_client::ReturnCode& code_in);
+                                const ReturnCode& code_in);
+  explicit DataNameAndSpaceAndReturnCode(maidsafe_error error);
   explicit DataNameAndSpaceAndReturnCode(const std::string& serialised_copy);
   DataNameAndSpaceAndReturnCode();
   DataNameAndSpaceAndReturnCode(const DataNameAndSpaceAndReturnCode& other);
@@ -312,7 +323,7 @@ struct DataNameAndSpaceAndReturnCode {
 
   nfs_vault::DataName name;
   int64_t available_space;
-  nfs_client::ReturnCode return_code;
+  ReturnCode return_code;
 };
 
 void swap(DataNameAndSpaceAndReturnCode& lhs, DataNameAndSpaceAndReturnCode& rhs) MAIDSAFE_NOEXCEPT;
@@ -321,8 +332,8 @@ bool operator==(const DataNameAndSpaceAndReturnCode& lhs, const DataNameAndSpace
 // ==================== PmidHealthAndReturnCode ====================================================
 struct PmidHealthAndReturnCode {
   PmidHealthAndReturnCode(const nfs_vault::PmidHealth& pmid_health_in,
-                          const nfs_client::ReturnCode& code_in);
-
+                          const ReturnCode& code_in);
+  explicit PmidHealthAndReturnCode(maidsafe_error error);
   explicit PmidHealthAndReturnCode(const std::string& serialised_copy);
   PmidHealthAndReturnCode(const PmidHealthAndReturnCode& other);
   PmidHealthAndReturnCode(PmidHealthAndReturnCode&& other);
@@ -330,7 +341,7 @@ struct PmidHealthAndReturnCode {
   std::string Serialise() const;
 
   nfs_vault::PmidHealth pmid_health;
-  nfs_client::ReturnCode return_code;
+  ReturnCode return_code;
 };
 
 void swap(PmidHealthAndReturnCode& lhs, PmidHealthAndReturnCode& rhs) MAIDSAFE_NOEXCEPT;
