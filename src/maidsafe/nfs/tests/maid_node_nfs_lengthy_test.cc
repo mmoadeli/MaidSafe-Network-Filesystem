@@ -1,4 +1,4 @@
-/*  Copyright 2013 MaidSafe.net limited
+/*  Copyright 2014 MaidSafe.net limited
 
     This MaidSafe Software is licensed to you under (1) the MaidSafe.net Commercial License,
     version 1.0 or later, or (2) The General Public License (GPL), version 3, depending on which
@@ -16,34 +16,22 @@
     See the Licences for the specific language governing permissions and limitations relating to
     use of the MaidSafe Software.                                                                 */
 
-#include "maidsafe/nfs/client/data_getter.h"
-
-#include "maidsafe/common/error.h"
-#include "maidsafe/common/log.h"
+#include "maidsafe/nfs/tests/maid_node_nfs_test.h"
 
 namespace maidsafe {
 
-namespace nfs_client {
+namespace nfs {
 
-DataGetter::DataGetter(AsioService& asio_service, routing::Routing& routing)
-    : get_timer_(asio_service),
-      get_versions_timer_(asio_service),
-      get_branch_timer_(asio_service),
-      dispatcher_(routing),
-      get_handler_(get_timer_, dispatcher_),
-      service_([&]()->std::unique_ptr<DataGetterService> {
-                 std::unique_ptr<DataGetterService> service(
-                 new DataGetterService(routing, get_handler_, get_versions_timer_,
-                                       get_branch_timer_));
-                 return std::move(service);
-               }()) {}
+namespace test {
 
-void DataGetter::Stop() {
-  get_timer_.CancelAll();
-  get_versions_timer_.CancelAll();
-  get_branch_timer_.CancelAll();
+TEST_F(MaidNodeNfsTest, FUNC_PopulateLengthyTree) {
+  VersionTreeTest(100, 1, 1500, 256);
+  VersionTreeTest(15000, 1, 14580, 128);
+  VersionTreeTest(100, 1, 20000, 128);
 }
 
-}  // namespace nfs_client
+}  // namespace test
+
+}  // namespace nfs
 
 }  // namespace maidsafe
