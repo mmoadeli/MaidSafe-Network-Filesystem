@@ -548,15 +548,17 @@ void swap(StructuredDataNameAndContentOrReturnCode& lhs,
 TipOfTreeAndReturnCode::TipOfTreeAndReturnCode()
     : tip_of_tree(), return_code() {}
 
+TipOfTreeAndReturnCode::TipOfTreeAndReturnCode(const ReturnCode return_code_in)
+    : tip_of_tree(), return_code(return_code_in) {}
+
 TipOfTreeAndReturnCode::TipOfTreeAndReturnCode(maidsafe_error error)
     : tip_of_tree(), return_code(error) {}
 
-TipOfTreeAndReturnCode::TipOfTreeAndReturnCode(
-    const TipOfTreeAndReturnCode& other)
-        : tip_of_tree(other.tip_of_tree), return_code(other.return_code) {}
+TipOfTreeAndReturnCode::TipOfTreeAndReturnCode(const TipOfTreeAndReturnCode& other)
+    : tip_of_tree(other.tip_of_tree), return_code(other.return_code) {}
 
 TipOfTreeAndReturnCode::TipOfTreeAndReturnCode(TipOfTreeAndReturnCode&& other)
-        : tip_of_tree(std::move(other.tip_of_tree)), return_code(std::move(other.return_code)) {}
+    : tip_of_tree(std::move(other.tip_of_tree)), return_code(std::move(other.return_code)) {}
 
 TipOfTreeAndReturnCode& TipOfTreeAndReturnCode::operator=(TipOfTreeAndReturnCode other) {
   swap(*this, other);

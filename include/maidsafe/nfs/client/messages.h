@@ -250,6 +250,7 @@ void swap(StructuredDataNameAndContentOrReturnCode& lhs,
 // =============================== TipOfTreeAndReturnCode =======================================
 struct TipOfTreeAndReturnCode {
   TipOfTreeAndReturnCode();
+  explicit TipOfTreeAndReturnCode(const ReturnCode return_code_in);
   explicit TipOfTreeAndReturnCode(maidsafe_error error);
   TipOfTreeAndReturnCode(const TipOfTreeAndReturnCode& other);
   TipOfTreeAndReturnCode(TipOfTreeAndReturnCode&& other);
