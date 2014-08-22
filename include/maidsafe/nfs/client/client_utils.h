@@ -45,7 +45,7 @@ struct HandleGetResult {
   std::shared_ptr<boost::promise<Data>> promise;
 };
 
-void HandlePutResponseResult(const ReturnCode& result,
+void HandlePutResponseResult(ReturnCode result,
                              std::shared_ptr<boost::promise<void>> promise);
 
 void HandleGetVersionsOrBranchResult(

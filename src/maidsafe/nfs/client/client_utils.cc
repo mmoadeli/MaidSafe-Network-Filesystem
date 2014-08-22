@@ -60,7 +60,7 @@ void HandleCreateAccountResult(const ReturnCode& result,
   }
 }
 
-void HandlePutResponseResult(const ReturnCode& result,
+void HandlePutResponseResult(ReturnCode result,
                              std::shared_ptr<boost::promise<void>> promise) {
   LOG(kVerbose) << "nfs_client::HandlePutResponseResult";
   try {

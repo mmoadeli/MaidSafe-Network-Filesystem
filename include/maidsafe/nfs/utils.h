@@ -187,7 +187,7 @@ void OpData<MessageContents>::HandleResponseContents(MessageContents&& response_
     }
   }
   LOG(kInfo) << "OpData<MessageContents>::HandleResponseContents call back";
-  callback(*result_ptr);
+  callback(std::move(*result_ptr));
 }
 
 }  // namespace nfs
