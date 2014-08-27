@@ -80,9 +80,10 @@ class MaidNodeNfs : public std::enable_shared_from_this<MaidNodeNfs>  {
       const DataName& data_name,
       const std::chrono::steady_clock::duration& timeout = std::chrono::seconds(10));
 
+  // review: large timeout added for debug mode
   template <typename Data>
   boost::future<void> Put(const Data& data, const std::chrono::steady_clock::duration& timeout =
-                                                std::chrono::seconds(10));
+                                                std::chrono::seconds(30));
 
   template <typename DataName>
   void Delete(const DataName& data_name);

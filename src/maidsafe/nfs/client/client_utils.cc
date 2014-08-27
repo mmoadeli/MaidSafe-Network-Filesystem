@@ -32,7 +32,8 @@ void HandleGetVersionsOrBranchResult(
     } else {
       LOG(kInfo) << "nfs_client::HandleGetVersionsOrBranchResult"
                  << " error during get version or branch";
-      promise->set_exception(result.data_name_and_return_code->return_code.value);
+      promise->set_exception(std::make_exception_ptr(
+          result.data_name_and_return_code->return_code.value));
     }
   }
   catch (...) {
@@ -51,7 +52,7 @@ void HandleCreateAccountResult(const ReturnCode& result,
       promise->set_value();
     } else {
       LOG(kWarning) << "nfs_client::HandleCreateAccountResult error during create account";
-      promise->set_exception(result.value);
+      promise->set_exception(std::make_exception_ptr(result.value));
     }
   }
   catch (...) {
@@ -69,7 +70,7 @@ void HandlePutResponseResult(ReturnCode result,
       promise->set_value();
     } else {
       LOG(kWarning) << "nfs_client::HandlePutResponseResult error in Put";
-      promise->set_exception(result.value);
+      promise->set_exception(std::make_exception_ptr(result.value));
     }
   }
   catch (...) {
@@ -88,7 +89,7 @@ void HandlePmidHealthResult(const AvailableSizeAndReturnCode& result,
       promise->set_value(result.available_size.available_size);
     } else {
       LOG(kWarning) << "nfs_client::HandlePmidHealthResult error during getPmidHealth";
-      promise->set_exception(result.return_code.value);
+      promise->set_exception(std::make_exception_ptr(result.return_code.value));
     }
   }
   catch (...) {
@@ -106,7 +107,7 @@ void HandleCreateVersionTreeResult(const ReturnCode& result,
       promise->set_value();
     } else {
       LOG(kWarning) << "nfs_client::HandleCreateVersionTreeResult error during version creation";
-      promise->set_exception(result.value);
+      promise->set_exception(std::make_exception_ptr(result.value));
     }
   }
   catch (...) {
@@ -128,7 +129,7 @@ void HandlePutVersionResult(
       promise->set_value(std::move(tip_of_tree));
     } else {
       LOG(kWarning) << "nfs_client::HandlePutVersionResult error during put version";
-      promise->set_exception(result.return_code.value);
+      promise->set_exception(std::make_exception_ptr(result.return_code.value));
     }
   }
   catch (...) {
@@ -146,7 +147,7 @@ void HandleRegisterPmidResult(const ReturnCode& result,
       promise->set_value();
     } else {
       LOG(kWarning) << "nfs_client::HandleRegisterPmidResult error during pmid registration";
-      promise->set_exception(result.value);
+      promise->set_exception(std::make_exception_ptr(result.value));
     }
   }
   catch (...) {

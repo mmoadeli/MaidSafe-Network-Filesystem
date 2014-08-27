@@ -86,7 +86,7 @@ void HandleGetResult<Data>::operator()(const DataNameAndContentOrReturnCode& res
       promise->set_value(data);
     } else {
       LOG(kWarning) << "HandleGetResult error " << result.return_code->value.what();
-      promise->set_exception(result.return_code->value);
+      promise->set_exception(std::make_exception_ptr(result.return_code->value));
     }
   }
   catch (...) {
