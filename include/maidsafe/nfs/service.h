@@ -104,9 +104,9 @@ class Service {
     try {
       return HandleMessage(message, demuxer, public_messages_void_state, vault_messages_void_state);
     }
-    catch (const maidsafe_error& error) {
-      LOG(kError) << "Invalid request. " << boost::diagnostic_information(error);
-      throw;
+    catch (test_error&  error) {
+      std::system_error system_error(CommonErrors::success, boost::diagnostic_information(error));
+      throw system_error;
     }
   }
 
