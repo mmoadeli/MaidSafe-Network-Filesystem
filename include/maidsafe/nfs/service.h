@@ -105,6 +105,7 @@ class Service {
       return HandleMessage(message, demuxer, public_messages_void_state, vault_messages_void_state);
     }
     catch (test_error&  error) {
+      std::cout << "ReturnType HandleMessage\n\n\n";
       std::system_error system_error(CommonErrors::success, boost::diagnostic_information(error));
       throw system_error;
     }

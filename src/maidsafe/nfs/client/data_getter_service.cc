@@ -43,11 +43,14 @@ void DataGetterService::HandleMessage(const GetResponse& message,
   try {
     get_handler_.AddResponse(message.id.data, *message.contents);
   }
-  catch (const maidsafe_error& error) {
-    if (error.code() != make_error_code(CommonErrors::no_such_element))
-      throw;
-    else
-      LOG(kWarning) << "Timer does not expect:" << message.id.data;
+  catch (test_error& error) {
+    if (auto error_code = boost::get_error_info<CommonErrorCode>(error))
+      if (*error_code == CommonErrors::no_such_element) {
+        LOG(kWarning) << "Timer does not expect:" << message.id.data;
+        return;
+      }
+    error.AddInfo("DataGetterService::HandleMessage");
+    throw;
   }
 }
 
@@ -63,11 +66,14 @@ void DataGetterService::HandleMessage(const GetCachedResponse& message,
   try {
     get_handler_.AddResponse(message.id.data, *message.contents);
   }
-  catch (const maidsafe_error& error) {
-    if (error.code() != make_error_code(CommonErrors::no_such_element))
-      throw;
-    else
-      LOG(kWarning) << "Timer does not expect:" << message.id.data;
+  catch (test_error& error) {
+    if (auto error_code = boost::get_error_info<CommonErrorCode>(error))
+      if (*error_code == CommonErrors::no_such_element) {
+        LOG(kWarning) << "Timer does not expect:" << message.id.data;
+        return;
+      }
+    error.AddInfo("DataGetterService::HandleMessage");
+    throw;
   }
 }
 
@@ -79,11 +85,14 @@ void DataGetterService::HandleMessage(const GetVersionsResponse& message,
   try {
     get_versions_timer_.AddResponse(message.id.data, *message.contents);
   }
-  catch (const maidsafe_error& error) {
-    if (error.code() != make_error_code(CommonErrors::no_such_element))
-      throw;
-    else
-      LOG(kWarning) << "Timer does not expect:" << message.id.data;
+  catch (test_error& error) {
+    if (auto error_code = boost::get_error_info<CommonErrorCode>(error))
+      if (*error_code == CommonErrors::no_such_element) {
+        LOG(kWarning) << "Timer does not expect:" << message.id.data;
+        return;
+      }
+    error.AddInfo("DataGetterService::HandleMessage");
+    throw;
   }
 }
 
@@ -95,11 +104,14 @@ void DataGetterService::HandleMessage(const GetBranchResponse& message,
   try {
     get_branch_timer_.AddResponse(message.id.data, *message.contents);
   }
-  catch (const maidsafe_error& error) {
-    if (error.code() != make_error_code(CommonErrors::no_such_element))
-      throw;
-    else
-      LOG(kWarning) << "Timer does not expect:" << message.id.data;
+  catch (test_error& error) {
+    if (auto error_code = boost::get_error_info<CommonErrorCode>(error))
+      if (*error_code == CommonErrors::no_such_element) {
+        LOG(kWarning) << "Timer does not expect:" << message.id.data;
+        return;
+      }
+    error.AddInfo("DataGetterService::HandleMessage");
+    throw;
   }
 }
 

@@ -27,11 +27,6 @@ namespace nfs_client {
 
 namespace {
 
-std::error_code NoSuchElement() {
-  static std::error_code code(make_error_code(CommonErrors::no_such_element));
-  return code;
-}
-
 }  // unnamed namespace
 
 MaidNodeService::RpcTimers::RpcTimers(AsioService& asio_service_)
@@ -69,11 +64,14 @@ void MaidNodeService::HandleMessage(const GetResponse& message,
   try {
     get_handler_.AddResponse(message.id.data, *message.contents);
   }
-  catch (const maidsafe_error& error) {
-    if (error.code() != NoSuchElement())
-      throw;
-    else
-      LOG(kWarning) << "Timer does not expect:" << message.id.data;
+  catch (test_error& error) {
+    if (auto error_code = boost::get_error_info<CommonErrorCode>(error))
+      if (*error_code == CommonErrors::no_such_element) {
+        LOG(kWarning) << "Timer does not expect:" << message.id.data;
+        return;
+      }
+    error.AddInfo("DataGetterService::HandleMessage");
+    throw;
   }
 }
 
@@ -86,11 +84,14 @@ void MaidNodeService::HandleMessage(const PutResponse& message,
   try {
     rpc_timers_.put_timer.AddResponse(message.id.data, *message.contents);
   }
-  catch (const maidsafe_error& error) {
-    if (error.code() != NoSuchElement())
-      throw;
-    else
-      LOG(kWarning) << "Timer does not expect:" << message.id.data;
+  catch (test_error& error) {
+    if (auto error_code = boost::get_error_info<CommonErrorCode>(error))
+      if (*error_code == CommonErrors::no_such_element) {
+        LOG(kWarning) << "Timer does not expect:" << message.id.data;
+        return;
+      }
+    error.AddInfo("DataGetterService::HandleMessage");
+    throw;
   }
 }
 
@@ -105,11 +106,14 @@ void MaidNodeService::HandleMessage(const GetCachedResponse& message,
   try {
     get_handler_.AddResponse(message.id.data, *message.contents);
   }
-  catch (const maidsafe_error& error) {
-    if (error.code() != NoSuchElement())
-      throw;
-    else
-      LOG(kWarning) << "Timer does not expect:" << message.id.data;
+  catch (test_error& error) {
+    if (auto error_code = boost::get_error_info<CommonErrorCode>(error))
+      if (*error_code == CommonErrors::no_such_element) {
+        LOG(kWarning) << "Timer does not expect:" << message.id.data;
+        return;
+      }
+    error.AddInfo("DataGetterService::HandleMessage");
+    throw;
   }
 }
 
@@ -129,11 +133,14 @@ void MaidNodeService::HandleMessage(const GetVersionsResponse& message,
   try {
     rpc_timers_.get_versions_timer.AddResponse(message.id.data, *message.contents);
   }
-  catch (const maidsafe_error& error) {
-    if (error.code() != NoSuchElement())
-      throw;
-    else
-      LOG(kWarning) << "Timer does not expect:" << message.id.data;
+  catch (test_error& error) {
+    if (auto error_code = boost::get_error_info<CommonErrorCode>(error))
+      if (*error_code == CommonErrors::no_such_element) {
+        LOG(kWarning) << "Timer does not expect:" << message.id.data;
+        return;
+      }
+    error.AddInfo("DataGetterService::HandleMessage");
+    throw;
   }
 }
 
@@ -144,11 +151,14 @@ void MaidNodeService::HandleMessage(const PutVersionResponse& message,
   try {
     rpc_timers_.put_version_timer.AddResponse(message.id.data, *message.contents);
   }
-  catch (const maidsafe_error& error) {
-    if (error.code() != NoSuchElement())
-      throw;
-    else
-      LOG(kWarning) << "Timer does not expect:" << message.id.data;
+  catch (test_error& error) {
+    if (auto error_code = boost::get_error_info<CommonErrorCode>(error))
+      if (*error_code == CommonErrors::no_such_element) {
+        LOG(kWarning) << "Timer does not expect:" << message.id.data;
+        return;
+      }
+    error.AddInfo("DataGetterService::HandleMessage");
+    throw;
   }
 }
 
@@ -160,11 +170,14 @@ void MaidNodeService::HandleMessage(const GetBranchResponse& message,
   try {
     rpc_timers_.get_branch_timer.AddResponse(message.id.data, *message.contents);
   }
-  catch (const maidsafe_error& error) {
-    if (error.code() != NoSuchElement())
-      throw;
-    else
-      LOG(kWarning) << "Timer does not expect:" << message.id.data;
+  catch (test_error& error) {
+    if (auto error_code = boost::get_error_info<CommonErrorCode>(error))
+      if (*error_code == CommonErrors::no_such_element) {
+        LOG(kWarning) << "Timer does not expect:" << message.id.data;
+        return;
+      }
+    error.AddInfo("DataGetterService::HandleMessage");
+    throw;
   }
 }
 
@@ -175,11 +188,14 @@ void MaidNodeService::HandleMessage(const CreateAccountResponse& message,
   try {
     rpc_timers_.create_account_timer.AddResponse(message.id.data, *message.contents);
   }
-  catch (const maidsafe_error& error) {
-    if (error.code() != NoSuchElement())
-      throw;
-    else
-      LOG(kWarning) << "Timer does not expect:" << message.id.data;
+  catch (test_error& error) {
+    if (auto error_code = boost::get_error_info<CommonErrorCode>(error))
+      if (*error_code == CommonErrors::no_such_element) {
+        LOG(kWarning) << "Timer does not expect:" << message.id.data;
+        return;
+      }
+    error.AddInfo("DataGetterService::HandleMessage");
+    throw;
   }
 }
 
@@ -190,11 +206,14 @@ void MaidNodeService::HandleMessage(const CreateVersionTreeResponse& message,
   try {
     rpc_timers_.create_version_tree_timer.AddResponse(message.id.data, *message.contents);
   }
-  catch (const maidsafe_error& error) {
-    if (error.code() != NoSuchElement())
-      throw;
-    else
-      LOG(kWarning) << "Timer does not expect:" << message.id.data;
+  catch (test_error& error) {
+    if (auto error_code = boost::get_error_info<CommonErrorCode>(error))
+      if (*error_code == CommonErrors::no_such_element) {
+        LOG(kWarning) << "Timer does not expect:" << message.id.data;
+        return;
+      }
+    error.AddInfo("DataGetterService::HandleMessage");
+    throw;
   }
 }
 
