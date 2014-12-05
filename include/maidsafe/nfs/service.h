@@ -167,17 +167,11 @@ class Service {
                                 const Demuxer& demuxer) {
 //     LOG(kVerbose) << "nfs HandleVaultMessage";
     VaultMessages vault_variant_message;
-    if (!vault::GetVariant(message, vault_variant_message)) {
-      LOG(kError) << "Not a valid vault message" << vault_variant_message;
-      try {
-      BOOST_THROW_EXCEPTION(MakeError(CommonErrors::invalid_parameter));
-      }
-      catch (maidsafe_error& error) {
-        error.AddInfo("NFS1");
-        throw;
-      }
-    } else {
+    if (vault::GetVariant(message, vault_variant_message)) {
       LOG(kVerbose) << "processing: " << vault_variant_message;
+    } else {
+      LOG(kError) << "Not a valid vault message" << vault_variant_message;
+      return ReturnType();
     }
     return boost::apply_visitor(demuxer, vault_variant_message);
   }

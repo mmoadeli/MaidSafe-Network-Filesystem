@@ -161,7 +161,7 @@ OpData<MessageContents>::OpData(int successes_required,
     BOOST_THROW_EXCEPTION(MakeError(CommonErrors::invalid_parameter));
     }
     catch (maidsafe_error& error) {
-      error.AddInfo("NFS1");
+      error.AddInfo("NFS5");
       throw;
     }
   }
