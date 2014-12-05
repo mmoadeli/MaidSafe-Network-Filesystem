@@ -73,7 +73,13 @@ void HandleGetResult<Data>::operator()(const DataNameAndContentOrReturnCode& res
     if (result.content) {
       if (result.name.type != Data::Tag::kValue) {
         LOG(kError) << "HandleGetResult incorrect returned data";
+        try {
         BOOST_THROW_EXCEPTION(MakeError(CommonErrors::invalid_parameter));
+        }
+        catch (maidsafe_error& error) {
+          error.AddInfo("NFS1");
+          throw;
+        }
       }
       LOG(kInfo) << "HandleGetResult fetched chunk has name : "
                  << HexSubstr(result.name.raw_name) << " and content : "

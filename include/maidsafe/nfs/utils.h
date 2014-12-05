@@ -157,7 +157,13 @@ OpData<MessageContents>::OpData(int successes_required,
       callback_executed_(!callback) {
   if (!callback || successes_required <= 0) {
     LOG(kError) << "invalid parameters for OpData constructor";
+    try {
     BOOST_THROW_EXCEPTION(MakeError(CommonErrors::invalid_parameter));
+    }
+    catch (maidsafe_error& error) {
+      error.AddInfo("NFS1");
+      throw;
+    }
   }
 }
 
