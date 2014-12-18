@@ -63,22 +63,16 @@ TEST_F(MaidNodeNfsTest, FUNC_PutGet) {
 
 TEST_F(MaidNodeNfsTest, FUNC_MultipleSequentialPuts) {
   routing::Parameters::caching = true;
-  const size_t kIterations(10);
-  GenerateChunks(kIterations);
+  const size_t kIterations(100);
   AddClient();
-  int index(0);
-  for (const auto& chunk : chunks_) {
-    auto future(clients_.back()->Put(chunk));
-    EXPECT_NO_THROW(future.get()) << "Store failure " << DebugId(NodeId(chunk.name()->string()));
+  for (size_t index(0); index < kIterations; ++index) {
+    auto chunk(ImmutableData(NonEmptyString(RandomString(1024))));
+    EXPECT_NO_THROW(clients_.back()->Put(chunk).get());
     LOG(kVerbose) << DebugId(NodeId(chunk.name()->string())) << " stored: " << index++;
+    EXPECT_NO_THROW(clients_.back()->Get<ImmutableData::Name>(chunk.name(),
+                                              std::chrono::seconds(kIterations * 36)).get());
+    LOG(kVerbose) << DebugId(NodeId(chunk.name()->string())) << " retrieved:";
   }
-
-  std::vector<boost::future<ImmutableData>> get_futures;
-  for (const auto& chunk : chunks_) {
-    get_futures.emplace_back(clients_.back()->Get<ImmutableData::Name>(
-        chunk.name(), std::chrono::seconds(kIterations * 36)));
-  }
-  CompareGetResult(chunks_, get_futures);
   LOG(kVerbose) << "Multiple sequential puts is finished successfully";
 }
 

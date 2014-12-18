@@ -68,7 +68,7 @@ class MaidNodeNfsTest : public testing::Test {
     }
   }
 
-  void GenerateChunks(const size_t iterations, const size_t chunk_size = kTestChunkSize) {
+  void GenerateChunks(size_t iterations, size_t chunk_size = kTestChunkSize) {
     chunks_.clear();
     for (auto index(iterations); index > 0; --index) {
       chunks_.emplace_back(NonEmptyString(RandomString(chunk_size)));
@@ -77,8 +77,9 @@ class MaidNodeNfsTest : public testing::Test {
     }
   }
 
-  void PutGetTest(const size_t num_of_clients, const size_t num_of_chunks) {
-    GenerateChunks(num_of_chunks);
+  void PutGetTest(const size_t num_of_clients, const size_t num_of_chunks,
+                  size_t chunk_size = kTestChunkSize) {
+    GenerateChunks(num_of_chunks, chunk_size);
     for (auto index(num_of_clients); index > 0; --index) {
 //       std::cout << "client " << num_of_clients - index << " added" << std::endl;
       AddClient();
@@ -86,7 +87,9 @@ class MaidNodeNfsTest : public testing::Test {
 
     std::vector<boost::future<void>> put_futures;
     for (const auto& chunk : chunks_)
-      put_futures.emplace_back(clients_[RandomInt32() % num_of_clients]->Put(chunk));
+      put_futures.emplace_back(
+          clients_[RandomInt32() % num_of_clients]->Put(chunk,
+                                                        std::chrono::seconds(num_of_chunks * 2)));
     int index(0);
     for (auto& future : put_futures) {
       EXPECT_NO_THROW(future.get()) << "Store failure "
