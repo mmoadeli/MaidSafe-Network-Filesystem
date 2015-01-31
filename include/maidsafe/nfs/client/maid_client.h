@@ -356,7 +356,7 @@ void MaidClient::OnMessageReceived(const T& routing_message) {
 
 template <typename Sender, typename Receiver>
 void MaidClient::HandleMessage(const nfs::TypeErasedMessageWrapper& wrapper_tuple,
-                                const Sender& sender, const Receiver& receiver) {
+                               const Sender& sender, const Receiver& receiver) {
   const auto& destination_persona(std::get<2>(wrapper_tuple));
   static_assert(std::is_same<decltype(destination_persona),
                              const nfs::detail::DestinationTaggedValue&>::value,
