@@ -161,7 +161,7 @@ void MpidClient::HandleMessage(const nfs::TypeErasedMessageWrapper& wrapper_tupl
     return service_.HandleMessage(wrapper_tuple, sender, receiver);
   auto action(std::get<0>(wrapper_tuple));
   auto source_persona(std::get<1>(wrapper_tuple).data);
-  LOG(kError) << " MpidClient::HandleMessage unhandled message from " << source_persona
+  LOG(kError) << "Unhandled message from " << source_persona
               << " " << action << " to " << destination_persona;
 }
 
